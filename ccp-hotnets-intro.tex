@@ -1,0 +1,59 @@
+\section{Background}%
+\label{sec:intro}
+
+Traditionally, applications have used the networking stack provided by the operating system through the socket API\@.  Recently, however, there has been a proliferation of new networking stacks as NICs have offered more custom features such as kernel bypass and as application developers have come to demand specialized features from the network~\cite{dpdk, mtcp, netmap, dcqcn, ix, quic}.  We refer to such modules that provide interfaces for data movement between applications and network hardware as \emph{datapaths}. 
+Examples of datapaths include not only the kernel~\cite{lwn-pluggable-tcp}, but also kernel-bypass methods~\cite{dpdk, netmap, mtcp}, RDMA~\cite{dcqcn}, user-space libraries~\cite{quic}, and emerging programmable NICs (``SmartNICs''~\cite{smartnic}).
+
+The proliferation of datapaths has created a significant challenge for deploying congestion control algorithms. For each new datapath, developers must re-implement their desired congestion control algorithms essentially from scratch---a difficult and tedious task. 
+For example, implementing TCP on Intel's DPDK is a significant undertaking~\cite{mtcp}. We expect this situation to worsen with the emergence of new hardware accelerators and programmable NICs because many such high-speed datapaths forego programming convenience for performance.
+
+Meanwhile, the diversity of congestion control algorithms---a key component of transport layers that continues to see innovation and evolution---makes supporting all algorithms across all datapaths even harder. The Linux kernel alone implements over a dozen~\cite{Jacobson88,newreno,cubic,vegas,illinois,htcp} algorithms, and many new proposals have emerged in only the last few years~\cite{dctcp,sprout,remy,pcc,rc3,gentleaggression,timely,bbr,dccp}. 
+%It has become impractical to expect developers and researchers to implement a battery of congestion control algorithms for each new datapath. 
+As hardware datapaths become more widely deployed, continuing down the current path will erode this rich ecosystem of congestion control algorithms because NIC hardware designers will tend to bake-in only a select few schemes into the datapath.
+
+We believe it is therefore time for a new {\em datapath-agnostic} architecture
+for endpoint congestion control. We propose to \emph{decouple} congestion
+control from the datapath and relocate it to a separate agent that we call the  {\em congestion
+  control plane} (\ccp{}). \ccp{} runs as a user-space program
+  %\footnote{\ccp{} can also reside in the kernel but having it in user-space makes programming new algorithms much easier.} 
+  and communicates asynchronously with the datapath to direct congestion control decisions. Our goal is to identify a narrow API for congestion control
+that developers can use to specify flexible congestion control logic, and that
+datapath developers can implement to support a variety of congestion control
+schemes. This narrow API enables congestion control algorithms and
+\datapaths to evolve independently, providing three key benefits:
+
+\smallskip
+\noindent
+{\bf Write once, run everywhere.} With \ccp{}, congestion control researchers will be able to write a single piece of software and run it on multiple datapaths, including those yet to be invented. Additionally, datapath developers can focus on implementing a standard set of primitives---many of which are already used today---rather than worry about constantly evolving congestion control algorithms. 
+Once an algorithm is implemented with the \ccp{} API, running on new \ccp{}-conformant datapaths will be automatic.
+
+\smallskip
+\noindent{\bf Ease of programming.} Locating \ccp in user-space and designing a convenient API for writing congestion control algorithms will make it easier to develop and deploy new schemes. 
+This will ease the process of implementing and evaluating novel algorithms.
+Furthermore, algorithm developers will be free to utilize powerful user-space libraries (\eg neural nets) and focus on the details of their methods rather than learning low-level datapath APIs.
+
+% \smallskip
+% \noindent{\bf Performance without compromises.} 
+% As NIC line rates steadily march upwards to 100 Gbit/s and beyond, 
+% there will be fewer CPU cycles available for complex congestion control
+% operations. Removing congestion control from the \datapath will enable richer
+% congestion control algorithms while retaining the performance of fast
+% \datapaths. 
+% \smallskip
+
+\smallskip
+\noindent{\bf Performance without compromises.} 
+As NIC line rates steadily march upwards to 100 Gbit/s and beyond, it is
+desirable to offload transport-layer packet processing to hardware to save CPU
+cycles. Unlike solutions that hard-code a congestion control algorithm in
+hardware, \eg ~\cite{dcqcn}, removing congestion control from the \datapath will
+enable richer congestion control algorithms while retaining the performance of
+fast \datapaths.
+\smallskip
+
+The key challenge in providing such flexibility is achieving good performance. 
+Congestion control schemes traditionally process every incoming ACK, but doing so, \ccp would incur unacceptable overheads. 
+We propose to tackle this problem using a new flexible batching method to summarize and communicate information between the \datapath and \ccp{} once or twice per RTT rather than on every ACK\@. 
+We show that this approach can achieve behavior close to native \datapath
+implementations since the fundamental time-scale for end-to-end congestion control is an RTT\@. 
+To our knowledge, \ccp{} is the first such off-datapath congestion-control architecture that does not process every single packet or ACK\@. 
