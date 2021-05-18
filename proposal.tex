@@ -1,204 +1,179 @@
-%% This file is for producing a Doctoral Thesis proposal.  It should be fairly
-%% self-explanatory.  
+\documentclass[fontsize=12pt,paper=letter]{scrartcl}
+\input{packages}
 
-\documentclass{article}
+\usepackage{setspace}
+\onehalfspacing
 
-\usepackage{xspace}
-\usepackage{cite,url}
+\newcommand{\tunnel}{Chunnel\xspace}
+\newcommand{\tunnels}{Chunnels\xspace}
 
 \begin{document}
+\frenchspacing
 
-%\bibliographystyle{plain}
 \pagestyle{empty}
-\markboth{{\sc thesis proposal}}{{\sc thesis proposal}}
-\def\title{Design and Implementation of a Congestion Control Plane}
+\begin{spacing}{1}
+\markboth{\textsc{thesis proposal}}{\textsc{thesis proposal}}
+\def\title{New Abstractions for Modern Networks}
 \def\author{Akshay Narayan}
 \def\addrone{32 Vassar St 32-G982}
 \def\addrtwo{Cambridge, MA  02139}
 
-\def\degree{Master of Science}
-%% Added \deptname for PhD proposals in other fields.
-%% Krishna Sethuraman (1990)
-\def\deptname{Electrical Engineering \\ and Computer Science}
-\def\laboratory{Computer Science and Artificial Intelligence Laboratory}
+\def\degree{Doctor of Philosophy}
+\def\deptname{Electrical Engineering and Computer Science}
+\def\laboratory{CSAIL}
 
 \def\submissiondate{\today}
-\def\completiondate{May 2018}
+\def\completiondate{May 2022}
 
-\def\supervisor{Professor Hari Balakrishnan}
-\def\supertitleone{Associate Professor of Electrical Engineering}
-\def\supertitletwo{and Computer Science}
-
-\def\readerone{Professor Mohammad Alizadeh}
-\def\readeronetitleone{Professor of Electrical Engineering}
-\def\readeronetitletwo{and Computer Science}
-
-\def\readertwo{}
-\def\readertwotitleone{}
-\def\readertwotitletwo{}
-
-\def\readerthree{}
-\def\readerthreetitleone{}
-\def\readerthreetitletwo{}
-
-
-\def\abstract{
-With Moore's law ending, the gap between general-purpose processor
-speeds and network link rates is widening. This trend has led to new
-packet-processing ``datapaths'' in endpoints, including kernel
-bypass software and emerging SmartNIC hardware.
-In addition, several applications are rolling out their own protocols atop UDP (e.g.,
-QUIC, WebRTC, Mosh, etc.), forming new datapaths different from the
-traditional kernel TCP stack.
-All these datapaths require congestion control,
-but they must implement it separately because it is not possible
-to reuse the kernel's TCP implementations. This paper proposes
-moving congestion control from the datapath into a separate agent.
-This agent, which we call the {\em congestion control plane\/} (CCP),
-must provide both an expressive congestion control API as well as
-a specification for datapath designers to implement and deploy CCP.\@
-We propose an API for congestion control, datapath primitives, and a
-user-space agent design that uses a batching method to communicate
-with the datapath.
-Our approach promises to preserve the behavior and performance of in-datapath
-implementations while making it significantly easier to implement and deploy new
-congestion control algorithms.
+\def\abstract{Modern networks and the applications that use them are increasingly specialized; each application increasingly uses a bespoke network stack which integrates desired protocols, services, and APIs. This thesis will describe two systems, Congestion Control Plane (CCP) and Bertha, which incorporate new abstractions to navigate this new setting from the perspective of congestion control algorithm and the application's network API, respectively.
+CCP decouples congestion control algorithm implementations from network datapaths by designing an abstract datapath which supports collecting custom measurements and subsequently applying rate or window enforcement.
+Bertha uses a new abstraction called a Chunnel to represent network services, \eg hardware offloads of application functionality, publish-subscribe communication services, or encryption.
 }
-
-\newcommand{\cut}[1]{}
-%
-\newcommand{\paragraphnone}[1]{\vspace{0.075in}\noindent{\bf #1}}
-\newcommand{\paragrapha}[1]{\vspace{0.075in}\noindent{\bf #1.}}
-\newcommand{\paragraphq}[1]{\vspace{0.075in}\noindent{\bf #1}}
-%
-\newcommand{\eg}{e.g., }
-\newcommand{\etc}{{etc.}\xspace}
-\newcommand{\ie}{i.e., }
-\newcommand{\ccp}{CCP\xspace}
-%
-\newcommand{\datapath}{datapath\xspace}
-\newcommand{\datapaths}{datapaths\xspace}
-\newcommand{\Datapaths}{Datapaths\xspace}
-\newcommand{\Datapath}{Datapath\xspace}
-%
-\frenchspacing
-%
-\newcommand{\handlers}{callbacks\xspace}
-\newcommand{\userspace}{user-space\xspace}
-\newcommand{\kernelspace}{kernel-space\xspace}
-%
-\newcommand{\controller}{agent\xspace}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%% You Should Not Need To Modify Anything Below Here %%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Cover Page - Author signs %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{center}
-{\Large \bf 
-   Massachusetts Institute of Technology
-\\ Department of \deptname \\}
-\vspace{.25in}
-{\Large \bf
-   Proposal for Thesis Research in Partial Fulfillment
-\\ of the Requirements for the Degree of
-\\ \degree \\}
+  \textsc{Massachusetts Institute of Technology \\ Department of \deptname\\}
+  \vspace{.25in}
+  \textsc{Proposal for Thesis Research in Partial Fulfillment \\ of the Requirements for the Degree of \\ \degree}
 \end{center}
 
+\vspace{.25in}
+
+\begin{tabular}{rl}
+    {\small \textsc{Title:}}                       & \title \\ 
+    {\small \textsc{Submitted by:}}
+                                                 & \author   \\
+                                                 & \addrone  \\
+                                                 & \addrtwo  \\ 
+                                                 \\
+                                                 \\
+    {\small \textsc{Signature of Author:}}         & \rule{2in}{0.4pt} \\
+    {\small \textsc{Date of Submission:}}          & \submissiondate \\ 
+    {\small \textsc{Expected Date of Completion:}} & \completiondate \\ 
+    {\small \textsc{Laboratory:}}                  & \laboratory
+\end{tabular}
+
+
 \vspace{.5in}
+\noindent
+\textsc{Brief Statement of the Problem:}
 
-\def\sig{{\small \sc (Signature of Author)}}
-
-\begin{tabular}{rlc}
-   {\small \sc Title:}                       & \multicolumn{2}{l}{\title}
-\\ {\small \sc Submitted by:}
-                            & \author  & \\
-                            & \addrone & \\
-                            & \addrtwo & \\ \cline{3-3}
-			    &	       & \makebox[2in][c]{\sig}
-\\ {\small \sc Date of Submission:}          & \multicolumn{2}{l}{\submissiondate}
-\\ {\small \sc Expected Date of Completion:} & \multicolumn{2}{l}{\completiondate}
-\\ {\small \sc Laboratory:}                  & \multicolumn{2}{l}{\laboratory}
-\end{tabular}
-
-
-\vspace{.75in}
-{\bf \sc Brief Statement of the Problem:}
-
+\noindent
 \abstract
-
-         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage %%% Supervision Agreement %%%
-         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{flushright}
-   Massachusetts Institute of Technology
-\\ Department of \deptname
-\\ Cambridge, Massachusetts 02139
-\end{flushright}
-
-\underline{\bf Thesis Supervision Agreement}
-
-\vspace{.25in}
-\begin{tabular}{rl}
-   {\small \sc To:}   & Department Graduate Committee
-\\ {\small \sc From:} & \supervisor
-\end{tabular}
-
-\vspace{.25in}
-The program outlined in the proposal:
-
-\vspace{.25in}
-\begin{tabular}{rl}
-   {\small \sc Title:}  & \title
-\\ {\small \sc Author:} & \author
-\\ {\small \sc Date:}   & \submissiondate
-\end{tabular}
-
-\vspace{.25in}
-is adequate for a \degree{} thesis.
-%I believe that appropriate readers for this thesis would be:
-%
-%\vspace{.25in}
-%\begin{tabular}{rl}
-%   {\small \sc Reader 1:} & \readerone
-%\\ {\small \sc Reader 2:} & \readertwo
-%%\\ {\small \sc Reader 3:} & \readerthree
-%\end{tabular}
-
-\vspace{.25in}
-Facilities and support for the research outlined in the proposal are available.
-I am willing to supervise the thesis and evaluate the thesis report.
-
-\vspace{.25in}
-\begin{tabular}{crc}
-  \hspace{2in} & {\sc Signed:} & \\ \cline{3-3}
-               &               & {\small \sc \supertitleone} \\
-               &               & {\small \sc \supertitletwo} \\
-               &               &                             \\
-               & {\sc Date:}   & \\ \cline{3-3}
-\end{tabular}
-
-\vspace{0in plus 1fill}
-
-Comments: \\
-\begin{tabular}{c}
-  \hspace{6.25in} \\
-  \mbox{} \\ \cline{1-1} \mbox{} \\
-  \mbox{} \\ \cline{1-1} \mbox{} \\
-  \mbox{} \\ \cline{1-1} \mbox{} \\
-%  \mbox{} \\ \cline{1-1} \mbox{} \\
-%  \mbox{} \\ \cline{1-1} \mbox{} \\
-%  \mbox{} \\ \cline{1-1} \mbox{} \\
-\end{tabular}
+\end{spacing}
 
 \newpage
 
-\input{ccp-hotnets-intro}
-\input{procedure}
+\section{Introduction}\label{s:intro}
+
+Until recently, most networks provided a small core set of communication services: best-effort packet delivery, perhaps multicast, and in some cases (\eg where RDMA is implemented) reliable delivery. As a result, most network stacks that applications use to send or receive messages expect little from the network. 
+While some specialized networks, such as those used for high-performance computing, have long supported a richer set of functionality and exposed this to applications through specialized network stacks (\eg MPI or PGAS stacks~\cite{pgas, pgas2, pgas3}), applications written for these specialized networks generally cannot be run in other environments.
+
+Because the network has offered a small set of communication functionality, applications have used a small set of standardized networking stacks: those offered by the operating system as well as a few commonly used in embedded settings. 
+These stacks offer a single, static set of algorithms: TCP, IP, \etc. 
+The main path for change has been via general consensus; \eg protocols such as congestion control~\cite{tcp-westwood-rfc}, loss recovery~\cite{fast-recovery-rfc, sacks}, and queue management schemes~\cite{red, pie, fq} were proposed, debated and adopted via IETF ``Requests for Comments,'' or RFCs.
+There are three historical reasons why standardized networking stacks succeeded.
+First is the \emph{end-to-end} principle~\cite{e2e}, which stated that architects should prefer to locate network-related functionality towards the ends of the network, rather than in the network itself.
+This discouraged early network engineers from including specialized functionality (or even devices other than routers and switches) in the network and incentivized implementing new features in common networking stacks instead.
+Second, the effects of Moore's law caused most developer effort to be focused on implementing more complex application logic; the standard networking stack was good enough for most users.
+Third, before the rise of cloud computing and massive scale, most applications were monolithic and ran on one or a few servers, with relatively simple communication patterns. 
+
+All three of these historical forces trending towards standardized networking stacks are diminished today. 
+Operators now manage networks with more middleboxes than routers~\cite{aplomb}, and can manage complex networks using principles from SDN~\cite{ethane, openflow}. 
+Meanwhile, Moore's law has ended while network line rates have continued to increase~\cite{isca-moore}, so researchers have proposed specialized networking stacks that offer lower latency, more throughput, more CPU efficiency, or even offload application networking functionality to hardware entirely~\cite{netmap, ix, arrakis, zygos, mtcp, shenango, farm, erpc, tonic}.
+Simultaneously applications have reached global scale with new communication patterns (partition-aggregate, map-reduce~\cite{mapreduce}, all-reduce).
+As a result, modern applications use a richer variety of complex communication functions than is provided by traditional network stacks; for example, they use remote procedure calls (RPCs), publish-subscribe messaging, encrypted and authenticated connections, auto-scaling, and other services. 
+
+\section{Network Stack Specialization}\label{s:specialization}
+
+This thesis will focus on two problems stemming from this move towards specialized networking stacks. Each will form a chapter of the thesis.
+
+\subsection{CCP}
+First, while research in congestion control has produced increasingly sophisticated algorithms, many modern proposals use techniques such as Bayesian forecasts (Sprout~\cite{sprout}), offline or online learning (Remy~\cite{remy}, PCC~\cite{pcc}, PCC-Vivace~\cite{pcc-vivace}, Indigo~\cite{pantheon}), or signal processing with Fourier transforms (Nimbus~\cite{nimbus}) that are difficult, if not impossible, to implement in a kernel or high-performance networking stack.
+However, specialized networking stacks, including user-space protocols atop UDP (e.g., QUIC~\cite{quic, mvfst}, WebRTC~\cite{webrtc}, Mosh~\cite{mosh}), kernel-bypass methods (\eg mTCP/DPDK~\cite{dpdk,mtcp,netmap}, Shenango~\cite{shenango}, \etc), RDMA~\cite{dcqcn}, multi-path TCP (MPTCP)~\cite{mptcp}, and specialized Network Interface Cards (``SmartNICs''~\cite{smartnic}) often offer a basic set of congestion control algorithms.
+
+These new datapaths offer limited choices for congestion control because implementing these algorithms correctly takes considerable time and effort. 
+We believe this significantly hinders experimentation and innovation both in the datapaths and the congestion control algorithms running over them.
+For instance, the set of available algorithms in mTCP~\cite{mtcp}, a TCP implementation on DPDK, is limited to a variant of Reno. 
+QUIC, despite Google's imposing engineering resources, does not have implementations of several algorithms that have existed in the Linux kernel for many years.  
+We expect this situation to worsen with the increasing emergence of specialized datapaths because developers tend to forego programming convenience for performance. 
+The difficulty is not the volume of code, but rather is the subtle correctness and performance issues in various algorithms that require expertise to understand and resolve.
+
+To address this problem, we propose CCP, which implements an abstraction congestion control designers and datapath developers can use to ensure interoperability. 
+With CCP,  the datapath encapsulates the information available to it about {\em congestion signals} like packet round-trip times (RTT), receptions, losses, ECN, etc., and periodically provides this information to an off-datapath module. Congestion control algorithms could run in the context of that module and control transmission parameters such as the window size, pacing rate, and transmission pattern, and the datapath can then transmit data according to that policy. 
+
+Running congestion control in the CCP offers the following benefits:
+\begin{enumerate}
+    \item \textbf{Write-once, run-anywhere:} One can write a congestion control algorithm once and run it on any datapath that supports the specified interface. 
+    We describe several algorithms running on three datapaths: the Linux kernel, mTCP/DPDK, and QUIC, and show algorithms running for the first time on certain datapaths (e.g., Cubic on mTCP/DPDK and Copa on QUIC).
+    \item \textbf{Higher pace of development:} With good abstractions,
+      a congestion control designer can focus on the algorithmic essentials
+      without worrying about the details and data structures of the
+      datapath. The resulting code is easier to read and maintain. In our implementation, congestion control algorithms in CCP are written in Rust or Python and run in user space. 
+    \item \textbf{New capabilities:} CCP makes it easier to provide new
+      capabilities, such as aggregate control of multiple flows~\cite{cm}, and algorithms that require sophisticated computation (e.g., signal processing, machine learning, \etc) running in \userspace programming environments. 
+\end{enumerate}
+
+We have previously published papers describing parts of CCP.
+A workshop paper exploring design options for CCP's abstraction was first described in a paper at HotNets 2017~\cite{ccp-hotnets}. 
+A paper describing an initial architecture and evaluation of CCP was published at SIGCOMM 2018~\cite{ccp-sigcomm}. 
+This paper also formed the bulk of my Master's thesis work~\cite{akshayn-ms-thesis}.
+
+%
+%\begin{figure}[t]
+%\centering
+%    \includegraphics[width=\columnwidth]{img/cc-timeline-nocongsig}
+%    \vspace{-20pt}
+%    \caption{Congestion control algorithms over the years.}\label{fig:cctimeline}
+%    %\caption{As link characteristics diversify, developers have developed a battery of congestion control algorithms, from the ``long-fat pipe'' schemes of the mid-2000s~\cite{westwood, veno, htcp, hybla} to purely delay-based~\cite{vegas, fasttcp, ledbat, nv, timely} and hybrid loss-delay~\cite{illinois, compound} schemes, and more recent proposals~\cite{pcc, remy, sprout, bbr, copa, abc}.}
+%    \vspace{-16pt}
+%\end{figure}
+
+\subsection{Bertha}
+The second problem is the broader context of network communication services that specialized network stacks take advantage of.
+To bridge the gap between the features of existing network stacks and the properties they want connections to have, applications and their new (often bespoke) networking stacks extend basic connection types using libraries, custom code, and external network services to implement the desired functionality (which we refer to as a connection's \emph{semantics}). 
+
+An application might use different semantics for different connections, \eg it might use RPCs when communicating with internal services and an HTTPS library to communicate with external servers. 
+Further, because libraries and programs providing these semantics are convenient and popular, there has also been a trend to provide implementations of the semantics in the network itself, \eg via programmable network elements such as network functions~\cite{amazon-alb, nfv}, programmable switches~\cite{domino, mom, netcache, cheetah}, or smart network interface cards (SmartNICs)~\cite{toe-chelsio, floem}. 
+Applications increasingly rely on these in-network services since they typically provide better efficiency, performance, and scalability.
+
+Due to this piecemeal approach to adding functionality to the network, 
+no program running in the host or the network has complete visibility into a connection's semantics. Instead, the connection semantics depend on how the application creates the connection, what libraries it uses, and how the network and host on which it is deployed are configured. 
+For example, Slack uses a load balancer (HAProxy) to distribute RPC requests among multiple servers~\cite{slack:outage}. 
+The semantics of the load balancer are determined by network configuration, while the semantics of the RPC protocol are determined by application code and host network stack configuration. 
+Thus, the developer (Slack) must manually determine connection semantics and ensure that they meet the application's requirements.
+
+This task is difficult. In Slack's case, an unexpected configuration change in their HAProxy load balancer led to unexpected auto-scaling behavior and a widespread outage~\cite{slack:outage} in July 2020, and another (from a different application component) in January 2021~\cite{slack:outage2}. 
+Similarly, bugs due to a mismatch in the schema used when serializing RPC messages are common~\cite{tableau-bug, aws-db-migration-bug, cassandra-schema-version-bug}. 
+
+Additionally, the services used to implement connection semantics frequently have different APIs and semantics depending on who implements them. 
+For example developers must be careful when configuring publish-subscribe services offered by Amazon, Google, and Azure to ensure that they implement the same semantics. As a result, programmers often need to rewrite their applications when moving between cloud providers, impeding portability. 
+
+Instead, we argue that applications should \emph{explicitly} specify their connection semantics as a part of their implementations. However, connection semantics vary widely across applications and no single set can suffice for all modern applications.
+Thus, we propose an \emph{extensible network stack} that application developers can use to specify rich connection semantics, library developers can extend to add new communication functions, and infrastructure providers can extend to add new implementations for communication functions.
+
+Bertha a new programmable network stack that meets these goals.
+Bertha's core abstraction is the \tunnel. A \tunnel is an interface that represents a specific communication functionality, \eg serialization or load-balancing. Applications specify connection semantics as a composition of several \tunnels when creating a connection, allowing them to specify rich connection semantics. Library developers can add new \tunnels, and
+Bertha applications can use them with minimal changes.
+Because Bertha represents connection semantics explicitly, it can ensure that connection endpoints use compatible semantics. Further, developers can reason about and write optimizations for those semantics. 
+
+To build Bertha, we will solve three challenges: (a) how can we design a \tunnel interface that allows extensibility, while at the same time allowing developers to compose multiple \tunnels when creating a connection?; (b) how does Bertha ensure that all applications communicating over a connection agree on the set of \tunnels to use and how they are implemented?; (c) how can developers exploit the Bertha interface to enable new communication optimizations? 
+
+We have previously published a workshop paper describing \tunnels, their possible applications, and future research directions (some of which this thesis will explore) at HotNets 2020~\cite{bertha-hotnets}. 
+Work on implementing Bertha and evaluating its extensibility and correctness is ongoing.
+
+\section{Proposed Timeline}
+
+\begin{itemize}
+    \item Already completed: We finished the CCP implementation and published a paper describing it. 
+    \item Already completed: We designed the right abstraction, \tunnels, to capture a wide variety of application network semantics.
+    \item \textbf{August 2021}: We will write a prototype implementation of Bertha, a network stack that can agree on application semantics via the \tunnel abstraction.
+    \item \textbf{December 2021}: We will improve the Bertha implementation to support more application semantics, and outline directions for future research.
+    \item \textbf{May 2022}: We will collect the results from each thesis chapter and write the thesis. We anticipate that much of the technical content will have already been drafted. We will prepare for the thesis defense.
+\end{itemize}
 
 \bibliographystyle{abbrv}
 \begin{small}

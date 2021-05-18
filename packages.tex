@@ -1,0 +1,53 @@
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{graphicx, xspace, xcolor, cite, url}
+\usepackage[margin=1in
+  %,showframe% <- only to show the page layout
+]{geometry}
+\usepackage[draft=false]{hyperref}
+\hypersetup{%
+  colorlinks=true,      % false: boxed links; true: colored links
+  linkcolor=blue,       % color of internal links
+  citecolor=magenta,    % color of links to bibliography
+  filecolor=cyan,       % color of file links
+  urlcolor=blue          % color of external links
+}
+\usepackage[hyperref]{backref}
+\usepackage[anythingbreaks]{breakurl}
+\usepackage{etoolbox}
+\appto\UrlBreaks{\do\-}
+\usepackage[htt]{hyphenat}
+
+%\usepackage{minted}
+%\usemintedstyle{vs}
+%\usepackage{fancyvrb}
+%\usepackage{booktabs}
+%\usepackage{tabu}
+%\usepackage{tabularx}
+%\usepackage{subcaption}
+%\usepackage{paralist}
+
+\interfootnotelinepenalty=10000
+
+\newcommand{\cut}[1]{}
+%
+\newcommand{\paragrapha}[1]{\vspace{0.05in}\noindent{\bf #1.}}
+\newcommand{\paragraphi}[1]{\noindent\textit{#1.}}
+\newcommand{\paragraphn}[1]{\noindent\textit{#1}}
+\newcommand{\ct}[1]{{\texttt{#1}}}
+%
+\newcommand{\eg}{e.g., }
+\newcommand{\etc}{{etc.}\xspace}
+\newcommand{\ie}{i.e., }
+\newcommand{\ccp}{CCP\xspace}
+%
+\newcommand{\datapath}{datapath\xspace}
+\newcommand{\datapaths}{datapaths\xspace}
+\newcommand{\Datapaths}{Datapaths\xspace}
+\newcommand{\Datapath}{Datapath\xspace}
+\newcommand{\handlers}{callbacks\xspace}
+\newcommand{\userspace}{user-space\xspace}
+\newcommand{\kernelspace}{kernel-space\xspace}
+%
+\newcommand{\controller}{agent\xspace}
