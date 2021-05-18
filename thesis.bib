@@ -281,6 +281,29 @@
     year = 1998,
 }
 
+@misc{sack,
+    series =    {Request for Comments},
+    number =    2018,
+    howpublished =    {RFC 2018},
+    doi =        {10.17487/RFC2018},
+    author =    {Sally Floyd and Jamshid Mahdavi and Matt Mathis and Dr. Allyn Romanow},
+    title =        {{TCP Selective Acknowledgment Options}},
+    year =        1996,
+    month =        oct,
+}
+
+@misc{fast-recovery-rfc,
+    series =    {Request for Comments},
+    number =    6582,
+    howpublished =    {RFC 6582},
+    doi =        {10.17487/RFC6582},
+    author =    {Andrei Gurtov and Tom Henderson and Sally Floyd and Yoshifumi Nishida},
+    title =        {{The NewReno Modification to TCP's Fast Recovery Algorithm}},
+    year =        2012,
+    month =        apr,
+}
+
+
 @inproceedings{pomdp2,
     author = "Nicolas Meuleau and Kee-Eung Kim and Leslie Pack Kaelbling and Anthony R. Cassandra",
     title = {{Solving POMDPs by Searching the Space of Finite Policies}},
@@ -399,15 +422,8 @@ howpublished={\url{https://github.com/ngsrinivas/linux-fork/commit/a84f0a6db796a
     number = {5},
     month = oct,
     year = {2016},
-    issn = {1542-7730},
-    pages = {50:20--50:53},
-    articleno = {50},
-    numpages = {34},
     url = {http://doi.acm.org/10.1145/3012426.3022184},
     doi = {10.1145/3012426.3022184},
-    acmid = {3022184},
-    publisher = {ACM},
-    address = {New York, NY, USA},
 }
 
 @article{multcp,
@@ -1166,13 +1182,6 @@ author = {{Chelsio Communications}},
     year = {2013},
 }
 
-@inproceedings{Jacobson88,
-    author = "Jacobson, V.",
-    title = {{Congestion Avoidance and Control}},
-    booktitle = {SIGCOMM},
-    year = 1988,
-}
-
 @article{iperf,
     title={Iperf: The TCP/UDP bandwidth measurement tool},
     author={Tirumala, Ajay and Qin, Feng and Dugan, Jon and Ferguson, Jim and Gibbs, Kevin},
@@ -1196,13 +1205,6 @@ author = {{Chelsio Communications}},
     author={Hu, Ningning and Steenkiste, Peter},
     year={2002},
     institution={DTIC Document}
-}
-
-@inproceedings{vegas,
-    author = "Brakmo, L. S. and O'Malley, S. W. and Peterson, L. L.",
-    title = {{TCP Vegas: New Techniques for Congestion Detection and Avoidance}},
-    booktitle = "{SIGCOMM}",
-    year = 1994,
 }
 
 @inproceedings{newreno,
@@ -1306,21 +1308,6 @@ author = {{Chelsio Communications}},
     year = 2002,
 }
 
-@article{blue-aqm,
-    author = "W. Feng and K. Shin and D. Kandlur and D. Saha",
-    title = "{The BLUE Active Queue Management Algorithms}",
-    journal = "{IEEE/ACM Trans. on Networking}",
-    month = aug,
-    year = 2002,
-}
-
-@inproceedings{avq,
-    author = "S. Kunniyur and R. Srikant",
-    title = "{Analysis and Design of an Adaptive Virtual Queue (AVQ) Algorithm for Active Queue Management}",
-    booktitle = "{SIGCOMM}",
-    year = 2001,
-}
-
 @article{ecn,
     author = "Floyd, S.",
     title = {{TCP and Explicit Congestion Notification}},
@@ -1409,13 +1396,6 @@ author = {{Chelsio Communications}},
     pages = {222--230},
     mon = aug,
     year = 1999,
-}
-
-@inproceedings{westwood,
-    title={{TCP Westwood: Bandwidth Estimation for Enhanced Transport over Wireless Links}},
-    author={Mascolo, S. and Casetti, C. and Gerla, M. and Sanadidi, M.Y. and Wang, R.},
-    booktitle={MobiCom},
-    year={2001},
 }
 
 @inproceedings{veno,
@@ -1580,26 +1560,6 @@ year  = {2011},
   year={2018},
 }
 
-@article{bbr,
-    author = {Cardwell, Neal and Cheng, Yuchung and Gunn, C. Stephen and Yeganeh, Soheil Hassas and Jacobson, Van},
-    title = {{BBR: Congestion-Based Congestion Control}},
-    journal = {ACM Queue},
-    issue_date = {September-October 2016},
-    volume = {14},
-    number = {5},
-    month = oct,
-    year = {2016},
-    issn = {1542-7730},
-    pages = {50:20--50:53},
-    articleno = {50},
-    numpages = {34},
-    url = {http://doi.acm.org/10.1145/3012426.3022184},
-    doi = {10.1145/3012426.3022184},
-    acmid = {3022184},
-    publisher = {ACM},
-    address = {New York, NY, USA},
-}
-
 @misc{ns2,
 key="ns2",
 title = {{The Network Simulator}},
@@ -1667,14 +1627,13 @@ howpublished={\url{https://www.isi.edu/nsnam/ns/}},
     year =         {2011},
 }
 
-@article{CoDel,
-    author = {Nichols, Kathleen and Jacobson, Van},
-    title = {{Controlling Queue Delay}},
-    journal = {ACM Queue},
-    volume = {10},
-    number = {5},
-    month = may,
-    year = {2012},
+@inproceedings{fq,
+    author = {Demers, A. and Keshav, S. and Shenker, S.},
+    title = {Analysis and Simulation of a Fair Queueing Algorithm},
+    year = {1989},
+    url = {https://doi.org/10.1145/75246.75248},
+    doi = {10.1145/75246.75248},
+    series = {SIGCOMM}
 }
 
 @inproceedings{bic,
@@ -1767,13 +1726,6 @@ howpublished={\url{https://lwn.net/Articles/128681/}},
 year = {2005},
 }
 
-@misc{dumazet-fq-patch,
-title = {{pkt\_sched: fq: Fair Queue packet scheduler}},
-howpublished={\url{https://lwn.net/Articles/564825/}},
-year = {2013},
-author = {Eric Dumazet},
-}
-
 @misc{the-case-for-rdma,
 title = {{The case for RDMA}},
 howpublished={\url{http://rdmaconsortium.org/home/The_Case_for_RDMA020531.pdf}},
@@ -1807,10 +1759,6 @@ year = {2013},
     howpublished={\url{http://asperasoft.com/technology/}},
 }
 
-@misc{sfqCoDel,
-    title="{sfqCoDel}",
-    howpublished={\url{http://www.pollere.net/Txtdocs/sfqcodel.cc}},
-}
 @misc{wroclawski,
     title={{TCP ex Machina}},
     author={Wroclawski, John},
@@ -3468,4 +3416,86 @@ author = {Google},
   pages={1--10},
   year={2014},
   organization={IEEE}
+}
+
+@inproceedings{isca-moore,
+    title={Dark Silicon and the End of Multicore Scaling},
+    author={Esmaeilzadeh, Hadi and Blem, Emily and Amant, Renee St and Sankaralingam, Karthikeyan and Burger, Doug},
+    booktitle={ISCA},
+    year={2011},
+}
+
+@inproceedings{aplomb,
+author = {Sherry, Justine and Hasan, Shaddi and Scott, Colin and Krishnamurthy, Arvind and Ratnasamy, Sylvia and Sekar, Vyas},
+title = {Making Middleboxes Someone Else's Problem: Network Processing as a Cloud Service},
+year = {2012},
+doi = {10.1145/2342356.2342359},
+series = {SIGCOMM}
+}
+
+@inproceedings{ccp-sigcomm,
+author = {Narayan, Akshay and Cangialosi, Frank and Raghavan, Deepti and Goyal, Prateesh and Narayana, Srinivas and Mittal, Radhika and Alizadeh, Mohammad and Balakrishnan, Hari},
+title = {Restructuring Endpoint Congestion Control},
+year = {2018},
+doi = {10.1145/3230543.3230553},
+series = {SIGCOMM}
+}
+
+@misc{mvfst,
+  title={{mvfst}},
+  author={Facebook},
+ howpublished={\url{https://github.com/facebookincubator/mvfst/}},
+}
+
+@inproceedings{erpc,
+author = {Kalia, Anuj and Kaminsky, Michael and Andersen, David G.},
+title = {Datacenter RPCs Can Be General and Fast},
+year = {2019},
+series = {NSDI}
+}
+
+@inproceedings{zygos,
+author = {Prekas, George and Kogias, Marios and Bugnion, Edouard},
+title = {ZygOS: Achieving Low Tail Latency for Microsecond-Scale Networked Tasks},
+year = {2017},
+doi = {10.1145/3132747.3132780},
+series = {SOSP}
+}
+
+@inproceedings{farm,
+  title={No compromises: Distributed transactions with consistency, availability, and performance},
+  author={Dragojevi{\'c}, Aleksandar and Narayanan, Dushyanth and Nightingale, Edmund B and Renzelmann, Matthew and Shamis, Alex and Badam, Anirudh and Castro, Miguel},
+  series = {SOSP},
+  year={2015}
+}
+
+@article{ethane,
+  title={{Ethane: Taking control of the enterprise}},
+  author={Casado, Martin and Freedman, Michael J and Pettit, Justin and Luo, Jianying and McKeown, Nick and Shenker, Scott},
+  journal={SIGCOMM CCR},
+  volume={37},
+  number={4},
+  pages={1--12},
+  year={2007},
+}
+
+@article{mapreduce,
+author = {Dean, Jeffrey and Ghemawat, Sanjay},
+title = {MapReduce: Simplified Data Processing on Large Clusters},
+year = {2008},
+volume = {51},
+number = {1},
+doi = {10.1145/1327452.1327492},
+journal = {CACM},
+month = jan,
+pages = {107–113},
+numpages = {7}
+}
+
+@phdthesis{akshayn-ms-thesis,
+author={Narayan, Akshay},
+title={The design and implementation of a congestion control plane},
+school={MIT},
+year={2014},
+note={S.M. Thesis. \url{https://hdl.handle.net/1721.1/121739}}
 }

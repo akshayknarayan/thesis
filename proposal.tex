@@ -66,7 +66,7 @@ Bertha uses a new abstraction called a Chunnel to represent network services, \e
 \end{spacing}
 
 \newpage
-
+\pagestyle{plain}
 \section{Introduction}\label{s:intro}
 
 Until recently, most networks provided a small core set of communication services: best-effort packet delivery, perhaps multicast, and in some cases (\eg where RDMA is implemented) reliable delivery. As a result, most network stacks that applications use to send or receive messages expect little from the network. 
@@ -74,7 +74,7 @@ While some specialized networks, such as those used for high-performance computi
 
 Because the network has offered a small set of communication functionality, applications have used a small set of standardized networking stacks: those offered by the operating system as well as a few commonly used in embedded settings. 
 These stacks offer a single, static set of algorithms: TCP, IP, \etc. 
-The main path for change has been via general consensus; \eg protocols such as congestion control~\cite{tcp-westwood-rfc}, loss recovery~\cite{fast-recovery-rfc, sacks}, and queue management schemes~\cite{red, pie, fq} were proposed, debated and adopted via IETF ``Requests for Comments,'' or RFCs.
+The main path for change has been via general consensus; \eg protocols such as congestion control~\cite{Jacobson88, westwood, bbr, vegas, hybla}, loss recovery~\cite{fast-recovery-rfc, sack, prr}, and queue management schemes~\cite{red, blue-aqm, avq, pie, CoDel, fq} were proposed, debated and adopted via IETF ``Requests for Comments,'' or RFCs.
 There are three historical reasons why standardized networking stacks succeeded.
 First is the \emph{end-to-end} principle~\cite{e2e}, which stated that architects should prefer to locate network-related functionality towards the ends of the network, rather than in the network itself.
 This discouraged early network engineers from including specialized functionality (or even devices other than routers and switches) in the network and incentivized implementing new features in common networking stacks instead.
