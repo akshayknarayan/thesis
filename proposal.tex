@@ -13,7 +13,7 @@
 \pagestyle{empty}
 \begin{spacing}{1}
 \markboth{\textsc{thesis proposal}}{\textsc{thesis proposal}}
-\def\title{New Abstractions for Modern Networks}
+\def\title{Enabling Configurable, Extensible, and Modular Network Stacks}
 \def\author{Akshay Narayan}
 \def\addrone{32 Vassar St 32-G982}
 \def\addrtwo{Cambridge, MA  02139}
@@ -42,7 +42,7 @@ Bertha uses a new abstraction called a Chunnel to represent network services, \e
 
 \vspace{.25in}
 
-\begin{tabular}{rl}
+\begin{tabular}{rp{7cm}}
     {\small \textsc{Title:}}                       & \title \\ 
     {\small \textsc{Submitted by:}}
                                                  & \author   \\
@@ -160,19 +160,22 @@ Bertha's core abstraction is the \tunnel. A \tunnel is an interface that represe
 Bertha applications can use them with minimal changes.
 Because Bertha represents connection semantics explicitly, it can ensure that connection endpoints use compatible semantics. Further, developers can reason about and write optimizations for those semantics. 
 
-To build Bertha, we will solve three challenges: (a) how can we design a \tunnel interface that allows extensibility, while at the same time allowing developers to compose multiple \tunnels when creating a connection?; (b) how does Bertha ensure that all applications communicating over a connection agree on the set of \tunnels to use and how they are implemented?; (c) how can developers exploit the Bertha interface to enable new communication optimizations? 
+Bertha answers the following question: how can we design a network stack for modern applications that supports application portability, composability across different communication libraries, and runtime reconfigurability to adapt the application's connections to their network environment?
+%(a) how can we design a \tunnel interface that allows extensibility, while at the same time allowing developers to compose multiple \tunnels when creating a connection?; (b) how does Bertha ensure that all applications communicating over a connection agree on the set of \tunnels to use and how they are implemented?; (c) how can developers exploit the Bertha interface to enable new communication optimizations? 
 
-We have previously published a workshop paper describing \tunnels, their possible applications, and future research directions (some of which this thesis will explore) at HotNets 2020~\cite{bertha-hotnets}. 
-Work on implementing Bertha and evaluating its extensibility and correctness is ongoing.
+We have previously published a workshop paper describing \tunnels, their possible applications, and future research directions at HotNets 2020~\cite{bertha-hotnets}. 
+Work to implement Bertha and evaluate its benefits is currently undergoing the peer review process.
 
-\section{Proposed Timeline}
+\section{Timeline}
 
 \begin{itemize}
-    \item Already completed: We finished the CCP implementation and published a paper describing it. 
-    \item Already completed: We designed the right abstraction, \tunnels, to capture a wide variety of application network semantics.
-    \item \textbf{August 2021}: We will write a prototype implementation of Bertha, a network stack that can agree on application semantics via the \tunnel abstraction.
-    \item \textbf{December 2021}: We will improve the Bertha implementation to support more application semantics, and outline directions for future research.
-    \item \textbf{May 2022}: We will collect the results from each thesis chapter and write the thesis. We anticipate that much of the technical content will have already been drafted. We will prepare for the thesis defense.
+    \item \textbf{January 2018} Finish the CCP implementation and published a paper describing it. 
+    \item \textbf{June 2020}: Design the right abstraction, \tunnels, to capture a wide variety of application network semantics.
+    \item \textbf{February 2021}: Write a prototype implementation of Bertha, a network stack that can agree on application semantics via the \tunnel abstraction.
+    \item \textbf{May 2021}: Improve the Bertha implementation to support more application semantics.
+    \item \textbf{September 2021}: Improve Bertha to demonstrate more of its capabilities, including multi-party negotiation and datapath adaptations such as batching. 
+    \item \textbf{January 2022}: Measure the overheads of Bertha's abstractions against other state-of-the-art networking stacks. 
+    \item \textbf{May 2022}: Collect the results from each thesis chapter and write the thesis. We anticipate that much of the technical content will have already been drafted. We will prepare for the thesis defense.
 \end{itemize}
 
 \bibliographystyle{abbrv}
