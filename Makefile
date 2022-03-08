@@ -7,6 +7,9 @@ PDFS = $(addsuffix .pdf,$(TARGETS))
 
 all: $(PDFS)
 
+thesis-titlepage.pdf: thesis-titlepage.tex
+	pdflatex thesis-titlepage.tex
+
 %.pdf: %.tex $(TEXFILES) thesis.bib
 	pdflatex -shell-escape -shell-escape $*.tex
 	bibtex $*
