@@ -2,8 +2,8 @@
 
 TARGETS = proposal
 
-TEXFILES = $(wildcard *.tex)
-PDFS = $(addsuffix .pdf,$(TARGETS))
+TEXFILES = $(wildcard *.tex) $(wildcard ccp/*.tex)
+PDFS = thesis.pdf
 
 all: $(PDFS)
 

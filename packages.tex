@@ -79,6 +79,9 @@
 % for \ifoptionfinal
 \usepackage{ifdraft}
 
+\usepackage{subcaption}
+\captionsetup[subfigure]{skip=-1pt,font={footnotesize}}
+
 % do not reset page numbers at \mainmatter
 \let\mainmatterorig\mainmatter
 \renewcommand\mainmatter
@@ -131,10 +134,12 @@
 
 \newcommand{\cut}[1]{}
 %
-\newcommand{\paragrapha}[1]{\vspace{0.05in}\noindent{\bf #1.}}
+\newcommand{\paragrapha}[1]{\vspace{0.05in}\noindent\textbf{#1}.}
 \newcommand{\paragraphi}[1]{\noindent\textit{#1.}}
 \newcommand{\paragraphn}[1]{\noindent\textit{#1}}
 \newcommand{\ct}[1]{{\texttt{#1}}}
+\newcommand{\Para}[1]{\vspace{4pt}\noindent\textbf{#1}}
+\newcommand{\Sec}[1]{\S\ref{#1}}
 %
 \newcommand{\eg}{e.g., }
 \newcommand{\etc}{{etc.}\xspace}
