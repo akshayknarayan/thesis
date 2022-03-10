@@ -13,11 +13,11 @@ thesis-titlepage.pdf: thesis-titlepage.tex
 thesis-abstract.pdf: thesis-abstract.tex
 	pdflatex thesis-abstract.tex
 
-%.pdf: %.tex $(TEXFILES) thesis.bib
-	pdflatex -shell-escape -shell-escape $*.tex
-	bibtex $*
-	pdflatex -shell-escape -shell-escape $*.tex
-	pdflatex -shell-escape -shell-escape $*.tex
+thesis.pdf: thesis-titlepage.pdf thesis-abstract.pdf $(TEXFILES) thesis.bib
+	pdflatex -shell-escape -shell-escape thesis.tex
+	bibtex thesis
+	pdflatex -shell-escape -shell-escape thesis.tex
+	pdflatex -shell-escape -shell-escape thesis.tex
 
 clean:
 	/bin/rm -f $(PDFS) *.dvi *.aux *.ps *~ *.log *.out *.lot *.lof *.toc *.blg *.bbl url.sty
