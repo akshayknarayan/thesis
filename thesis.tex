@@ -1,0 +1,107 @@
+\documentclass[fontsize=12pt,paper=letter,twosided,cleardoublepage=plain,final]{scrbook}
+\input{packages}
+
+% for 1.5 line spacing
+\usepackage{setspace}
+\onehalfspacing
+% single spacing for table of contents
+\AfterTOCHead{\singlespacing}
+
+% recompute page layout based on the above
+\recalctypearea
+
+% in thesis: titlehead, subject, title, subtitle
+\title{Enabling Configurable, Extensible, and Modular Network Stacks}
+\author{Akshay Narayan}
+\begin{document}
+
+\frontmatter
+
+% always arabic page numbering (default is roman in \frontmatter)
+\pagenumbering{arabic}
+
+\includepdf[pages=-]{./thesis-titlepage.pdf}
+\cleardoublepage
+
+\includepdf[pages=-,pagecommand={}]{./thesis-abstract.pdf}
+\cleardoublepage
+
+\section*{Acknowledgments}
+\begin{spacing}{1}
+%\input{00-acknowledgements.tex}
+    Foo.
+\end{spacing}
+\cleardoublepage
+
+\section*{Prior Publication}
+Parts of this thesis were previously published in workshop papers~\cite{ccp, bertha} and a conference
+paper~\cite{ccp}.
+\cleardoublepage
+
+\tableofcontents
+
+\mainmatter
+
+\chapter{Introduction}\label{s:intro}
+
+Foo.
+
+%\input{01-introduction.tex}
+%
+%\chapter{Background: Noria}
+%\label{s:noria}
+%
+%\input{02-noria.tex}
+%
+%\chapter{Partial State}
+%\label{s:partial}
+%
+%\input{03-partial.tex}
+%
+%\chapter{Maintaining Correctness}
+%\label{s:correct}
+%
+%\input{04-correctness.tex}
+%
+%\chapter{Implementation}
+%\label{s:impl}
+%
+%\input{05-implementation.tex}
+%
+%\chapter{Evaluation}
+%\label{s:eval}
+%
+%\input{06-evaluation.tex}
+%
+%\chapter{Related Work}
+%\label{s:related}
+%
+%\input{07-related-work.tex}
+%
+%\chapter{Discussion}
+%\label{s:disc}
+%
+%\input{08-discussion.tex}
+%
+%\chapter{Future Work}
+%\label{s:future}
+%
+%\input{09-future-work.tex}
+%
+%\chapter{Conclusion}
+%
+%
+%\appendix
+%\chapter{Noria In Simpler Terms}
+%\label{s:simple}
+%
+%\input{A1-simpler-terms.tex}
+
+\backmatter
+
+% single spacing for bibliography
+\begin{spacing}{1}
+\printbibliography
+\end{spacing}
+
+\end{document}

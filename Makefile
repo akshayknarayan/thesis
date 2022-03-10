@@ -10,6 +10,9 @@ all: $(PDFS)
 thesis-titlepage.pdf: thesis-titlepage.tex
 	pdflatex thesis-titlepage.tex
 
+thesis-abstract.pdf: thesis-abstract.tex
+	pdflatex thesis-abstract.tex
+
 %.pdf: %.tex $(TEXFILES) thesis.bib
 	pdflatex -shell-escape -shell-escape $*.tex
 	bibtex $*
