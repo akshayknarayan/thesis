@@ -1,0 +1,55 @@
+\documentclass[fontsize=12pt,paper=letter]{scrartcl}
+\usepackage[margin=1.25in
+  %,showframe% <- only to show the page layout
+]{geometry}
+\usepackage{libertine}
+
+% for \sfrac
+\usepackage{xfrac}
+
+\begin{document}
+\begin{titlepage}
+  \begin{center}
+    \textbf{\large Enabling Configurable, Extensible, and Modular Network Stacks}\\
+    \vspace{0.3\baselineskip}
+    by\\
+    \vspace{0.3\baselineskip}
+    {\large Akshay Narayan}\\
+    \vspace{0.4\baselineskip}
+    \begin{addmargin}[0.5in]{0.5in}
+      \centering
+      Submitted to the Department of Electrical Engineering and Computer Science
+      on \today{} in Partial Fulfillment of the Requirements for the Degree of
+      Doctor of Philosophy in Electrical Engineering and Computer Science
+    \end{addmargin}
+  \end{center}
+
+  \begin{flushleft}
+  \textbf{Abstract}
+  \vspace{0.5\baselineskip}
+
+Modern networks and the applications that use them are increasingly specialized; each application increasingly uses a bespoke network stack which integrates desired protocols, services, and APIs. This thesis will describe two systems, Bertha and Congestion Control Plane (CCP), which incorporate new abstractions to navigate this new setting from the perspective of congestion control algorithm and the application's network API, respectively.
+Bertha uses a new abstraction called a Chunnel to represent network services, e.g., hardware offloads of application functionality, publish-subscribe communication services, or encryption.
+CCP decouples congestion control algorithm implementations from network datapaths by designing an abstract datapath which supports collecting custom measurements and subsequently applying rate or window enforcement.
+
+  \bigskip
+
+  \vspace{0.5\baselineskip}
+  Thesis Supervisor: Hari Balakrishnan\\
+  Title: Fujitsu Chair Professor of Electrical Engineering and Computer Science, MIT
+
+  \vspace{0.2\baselineskip}
+
+  Thesis Committee Member: Mohammad Alizadeh\\
+  Title: Associate Professor of Electrical Engineering and Computer Science, MIT
+  
+  \vspace{0.2\baselineskip}
+  Thesis Committee Member: Aurojit Panda\\
+  Title: Assistant Professor of Computer Science, NYU
+
+  \vspace{0.2\baselineskip}
+  Thesis Committee Member: Scott Shenker\\
+  Title: Professor in the Graduate School, UC Berkeley
+  \end{flushleft}
+\end{titlepage}
+\end{document}
