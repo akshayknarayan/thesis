@@ -1,3 +1,12 @@
 [submodule "ccp"]
 	path = ccp
 	url = git@github.com:akshayknarayan/sigcomm18.git
+[submodule "bertha"]
+	path = bertha
+	url = git@github.com:akshayknarayan/bertha-paper.git
+[submodule "park"]
+	path = park
+	url = git@github.com:hongzimao/park_writing.git
+[submodule "bundler"]
+	path = bundler
+	url = https://github.com/bundler-project/writing.git

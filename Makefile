@@ -1,8 +1,8 @@
 ##
 
-TARGETS = proposal
+TARGETS = proposal thesis
 
-TEXFILES = $(wildcard *.tex) $(wildcard ccp/*.tex)
+TEXFILES = $(wildcard *.tex) $(wildcard ccp/*.tex) $(wildcard bertha/*.tex)
 PDFS = thesis.pdf
 
 all: $(PDFS)
