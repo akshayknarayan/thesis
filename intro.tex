@@ -1,5 +1,25 @@
+\setlength{\epigraphwidth}{0.8\textwidth}
+\begin{singlespace}
+\epigraph{
+    \footnotesize
+At that time it was also hoped that a clarification of humanity's basic mysteries -- the origin of
+the Library and of time -- might be found. It is verisimilar that these grave mysteries could be
+explained in words: if the language of philosophers is not sufficient, the multiform Library will have
+produced the unprecedented language required, with its vocabularies and grammars. For four
+centuries now men have exhausted the hexagons\ldots There are official searchers, inquisitors. I
+have seen them in the performance of their function: they always arrive extremely tired from their
+journeys; they speak of a stairway without steps which almost killed them; they talk with the librarian of
+galleries and stairs; sometimes, they pick up the nearest book and leaf through it, looking for
+infamous words. Obviously, no one expects to discover anything.
+}{\textit{Jorge Luis Borges---The Library of Babel}}
+\end{singlespace}
+
 \noindent
-Building modern networked applications as well as the infrastructure that powers them would not be possible without \emph{layering} (closely related to modularity in software engineering).
+Computing has evolved over the past several decades from a centralized, monolithic model to the contemporary notion of ubiquitous computing. From the initial network support for the transfer of scientific data between large research institutions to the later rise of cloud computing and mobile computing, the network has become increasingly crucial for the operation of modern computer applications. 
+Indeed, today's networked applications dominate users' experience of using computers, and the near-ubiquitious availability of the network has enabled a large-scale shift towards the use of applications for not only data transfer and messaging, but also conferencing, entertainment, transportation, productivity, finance, and more.
+
+These modern applications must scale to serve not only a large number of users, but also users spanning a vast variety of network envrionments. Applications can communicate with hosts $10\mu$s away (\ie within a datacenter), or $600$ms away (\ie via a satellite in geostationary orbit). The available bandwidth might be tens or hundreds of gigabits per second in a carrier network or a legacy copper line supporting less than a megabit per second. 
+Thus, building modern networked applications as well as the infrastructure that powers them would not be possible without \emph{layering}, which is closely related to modularity in software engineering.
 With layering, each component of the broader system is independent and has standardized interfaces to other components; it should thus be possible to swap in alternate implementations of a component without changing other modules or relying on any particular underlying hardware or network environment.
 Perhaps the most well known example of layering in practice is the use of various physical media in the Internet, which spans WiFi, cellular, copper, and fiber links.
 Despite the differences in how these technologies achieve their shared core goal of packet delivery, the layered abstractions the Internet has adopted enable applications to use the network without special consideration for each underlying transmission media.
@@ -12,18 +32,18 @@ For example, individual libraries are tied to certain environments (such as a sp
 Especially today, with applications relying on third-party libraries and network features, changing an application's extended network stack--including not only the operating system's traditional packet transport functionality but also modern libraries which facilitate the use of network services and hardware--is considered daunting enough to cause ``lock-in'' to cloud networks and libraries.
 Indeed, losing modularity means that work on powerful network services (\eg in-network hardware offloads of application features) risks not seeing deployment if using those features would complicate an application's development or deployment. 
 
-This thesis explores the following question:
+This thesis thus explores the following question:
 
-\begin{quote}
+\begin{displayquote}
 How should the adoption of modern networking features affect the way we build networked applications as well as network datapaths?
-\end{quote}
+\end{displayquote}
 \noindent
 Ideally, we would re-design the networking stack to regain modularity and extensibility, so that developers can build correct, efficient, and portable applications.
 This thesis thus addresses this need in two ways:
 
 \begin{itemize}
-  \item Bertha is a new \emph{runtime re-configurable} way of building networking stacks that allows applications to decide at runtime which implementations of their desired network features to use. 
-  \item Congestion Control Plane (CCP) is a new way to implement congestion control algorithms, a key area of networking research, in a modular and portable way across different network stacks.
+  \item Bertha (\S\ref{s:bertha}) is a new \emph{runtime re-configurable} way of building networking stacks that allows applications to decide at runtime which implementations of their desired network features to use. 
+  \item Congestion Control Plane (CCP) (\S\ref{s:ccp}) is a new way to implement congestion control algorithms, a key datapath component, in a modular and portable way across different network stacks.
 \end{itemize}
 
 \section{Bertha: A Runtime Re-configurable Network Stack}
@@ -34,14 +54,15 @@ Imagine instead that applications could provide specifications of network functi
 Just as compilers today apply environment-specific optimizations when deciding which instructions to include, the network stack could select network feature implementations best for the network environment. 
 In this case, applications would be both portable and efficient: their high level feature specifications could apply to any network, but they would still use optimized feature implementations and thus get good performance.
 
-Bertha~\cite{bertha-hotnets, bertha}, a runtime re-configurable network stack, provides this capability. 
-Bertha's core abstraction, called Chunnels, specifies the use of a network feature such as load balancing without committing to a specific implementation. Application developers can easily compose Chunnels into \emph{Chunnel stacks} that specify the network functionality they need.
+Bertha, a runtime re-configurable network stack, provides this capability. 
+Bertha's core abstraction, called the Chunnel, specifies the use of a network feature such as load balancing without committing to a specific implementation. Application developers can easily compose Chunnels into \emph{Chunnel stacks} that specify the network functionality they need.
 Bertha then decides when establishing connections at runtime which implementations of each network feature to use. This ``runtime re-configuration'' enables optimizations that are not possible otherwise; \eg a multicast application can switch Chunnel implementations depending on the number of connection participants to provide better performance.
 
 Further, because Bertha makes the Chunnel stack explicit and type-checkable, domain experts can publish common optimizing transformations over Chunnel stacks which application developers can then import and use. 
 For example, a domain expert might have the insight that a microservice application that uses a container networking interface (CNI) that encrypts inter-container network traffic by default does not require the additional use of an application-level encryption library. 
 This domain expert could then publish a rule-based transformation that developers could apply to their Chunnel stacks to remove the redundant library.
-I have used Bertha to build three applications which demonstrate its usefulness in making network features and services more accessible: a microservice application with a virtual network bypass for machine-local connections, a publish-subscribe queue that dynamically transitions implementations depending on the number of participants, and a sharded key-value store that moves the sharding functionality between the client and server at runtime.
+
+This thesis demonstrates three applications built with Bertha which demonstrate its usefulness in making network features and services more accessible: a microservice application with a virtual network bypass for machine-local connections, a publish-subscribe queue that dynamically transitions implementations depending on the number of participants, and a sharded key-value store that moves the sharding functionality between the client and server at runtime.
 
 \section{CCP: Restructuring Endpoint Congestion Control}
 
@@ -50,13 +71,13 @@ First, they have adopted special-purpose network stacks based on QUIC, kernel-by
 Additionally, developers increasingly employ new congestion control algorithms to more efficiently and fairly utilize available network bandwidth. Many such proposals use sophisticated techniques including machine learning or signal processing that are difficult, if not impossible, to implement in a tightly-constrained datapath environment where performance is crucial. 
 These two trends combine to create a problem for both datapath developers and congestion control researchers: on one hand, incorporating new congestion control algorithms into a datapath requires knowledge and effort per each congestion control algorithm, and on the other hand congestion control researchers must expend per-datapath effort to implement their algorithms so applications can use them.
 
-To address this challenge, I designed and built Congestion Control Plane (CCP)~\cite{ccp-hotnets, ccp}, a system in which the datapath can measure common congestion signals for ongoing connections and periodically provide this to an off-datapath module that encapsulates the congestion control algorithm's implementation. With CCP, both datapath support for arbitrary congestion control algorithms and implementing new congestion control algorithms become one-time efforts.
+To address this challenge, Congestion Control Plane (CCP), a system in which the datapath can measure common congestion signals for ongoing connections and periodically provide this to an off-datapath module that encapsulates the congestion control algorithm's implementation. With CCP, both datapath support for arbitrary congestion control algorithms and implementing new congestion control algorithms become one-time efforts.
 A core component of CCP is its datapath language with which congestion control algorithms can safely specify per-packet logic (\eg calculating measurements or triggering state transitions) atop the datapath's base measurements.
 
-CCP has been a useful platform for both further research and teaching.
-Notably, CCP is deployed as an experimental framework for new congestion control algorithms in \ct{mvfst}, Facebook's production QUIC implementation. With CCP, Facebook engineers could ensure isolation between new experimental algorithm implementations and the rest of the datapath, which is important for reliability in their large-scale production environment.
-Further, in the Park~\cite{park} project we used CCP to explore and demonstrate challenges in applying reinforcement learning approaches to systems domains. 
+%CCP has been a useful platform for both further research and teaching.
+%Notably, CCP is deployed as an experimental framework for new congestion control algorithms in \ct{mvfst}, Facebook's production QUIC implementation. With CCP, Facebook engineers could ensure isolation between new experimental algorithm implementations and the rest of the datapath, which is important for reliability in their large-scale production environment.
+%Further, in the Park~\cite{park} project we used CCP to explore and demonstrate challenges in applying reinforcement learning approaches to systems domains. 
 
-Finally, CCP was a key enabling component of the Bundler~\cite{bundler} middlebox project. With Bundler, we observed that traditional deployments of datapath scheduling algorithms (\eg fair queueing or traffic class prioritization) have a drawback: the scheduling policy is defined at the edge, but must be enforced where congestion occurs to be useful.
-We thus designed and implemented Bundler, which uses CCP-provided congestion control mechanisms to shift network queues to itself so it can enforce scheduling policies. For example, we showed that using Bundler to enforce fair queueing can reduce the median flow completion time of the bundled component flows. 
-Without CCP, implementing Bundler would have been challenging; the ability to easily experiment with different congestion control algorithms was crucial for its development.
+%Finally, CCP was a key enabling component of the Bundler~\cite{bundler} middlebox project. With Bundler, we observed that traditional deployments of datapath scheduling algorithms (\eg fair queueing or traffic class prioritization) have a drawback: the scheduling policy is defined at the edge, but must be enforced where congestion occurs to be useful.
+%We thus designed and implemented Bundler, which uses CCP-provided congestion control mechanisms to shift network queues to itself so it can enforce scheduling policies. For example, we showed that using Bundler to enforce fair queueing can reduce the median flow completion time of the bundled component flows. 
+%Without CCP, implementing Bundler would have been challenging; the ability to easily experiment with different congestion control algorithms was crucial for its development.
