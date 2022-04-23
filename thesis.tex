@@ -34,8 +34,8 @@
 \cleardoublepage
 
 \section*{Prior Publication}
-Parts of this thesis were previously published in workshop papers~\cite{ccp, bertha} and a conference
-paper~\cite{ccp}.
+Parts of this thesis were previously published in part in workshop papers~\cite{ccp, bertha} and in conference
+papers~\cite{ccp, bundler, park}.
 \cleardoublepage
 
 \tableofcontents
@@ -45,6 +45,10 @@ paper~\cite{ccp}.
 \chapter{Introduction}\label{s:intro}
 
 \input{intro.tex}
+
+\chapter{Background}\label{s:background}
+
+Foo.
 
 \chapter{Bertha}\label{s:bertha}
 
@@ -84,12 +88,9 @@ paper~\cite{ccp}.
 \input{ccp/datapath}
 \afterpage{\FloatBarrier}
 \afterpage{\clearpage}
-\input{ccp/capabilities}
-\afterpage{\FloatBarrier}
-\afterpage{\clearpage}
 \input{ccp/eval}
-\afterpage{\FloatBarrier}
-\afterpage{\clearpage}
+\input{ccp/capabilities}
+\input{ccp-capabilities-park}
 \input{ccp/concl}
 
 \chapter{Conclusion}\label{s:thesis-concl}

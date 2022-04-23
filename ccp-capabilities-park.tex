@@ -1,0 +1,226 @@
+\subsection{Park}
+\label{s:capabilities:park}
+
+\begin{figure}
+\includegraphics[width=0.95\textwidth]{park/nips-19/figures/training_curve_ccp.pdf}
+\caption{We used CCP to study the applicability of reinforcement learning to congestion control.}
+\label{f:curve_ccp}
+\end{figure}
+
+We used CCP to implement congestion control support in Park~\cite{park}, an open, extensible platform that presents a common RL interface to connect to
+a suite of computer system environments. 
+These representative environments span a wide variety of problems across networking, databases, and distributed systems, and range from centralized planning problems to distributed fast reactive control tasks. In the backend, the environments are powered by both real systems (in 7 environments) and high fidelity simulators (in 5 environments).  
+For each environment, Park defines the MDP formulation, e.g., events that triggers an MDP step, the state and action spaces and the reward function.
+This allows researchers to focus on
+the core algorithmic and learning challenges, without having to deal
+with low-level system implementation issues.
+At the same time, Park makes it easy to
+compare 
+different proposed learning agents on a common benchmark, similar to how OpenAI Gym~\cite{openaigym} has standardized RL benchmarks for robotics control tasks.
+Finally, Park defines a RPC interface between the RL agent and the backend system, making it easy to extend to more environments in the future. 
+
+We used CCP to implement Park's congestion control environment.
+We train and test the A2C agent in the centralized control setting (a single TCP
+connection) on a simple single-hop topology. 
+%
+We used a 48Mbps fixed-bandwidth bottleneck link with 50ms round-trip latency
+and a drop-tail buffer of 400 packets (2 bandwidth-delay products of maximum
+size packets) in each direction.
+For comparison, we run TCP Vegas~\cite{vegas}.
+Vegas attempts to maintain a small number
+of packets (by default, around 3) in the bottleneck queue, which results in an
+optimal outcome (minimal delay and packet loss, maximal throughput) for a
+single-hop topology without any competing traffic. 
+``Confined search space'' means we confine the action space of A2C agent
+to be only within $0.2$ and $2\times$ of the average action output from Vegas. 
+
+We find that in this environment, random exploration is inefficient
+to search the large state space that provides little reward gradient.
+This is because unstable control policies (which widely spans the policy space)
+cannot drain the network queue fast enough and results in indistinguishable
+(e.g., delay matches max queuing delay) poor rewards.
+Confining the search space with domain knowledge significantly improves
+learning efficiency in Figure~\ref{f:curve_ccp}.
+
+\subsection{Bundler}\label{s:capabilities:bundler}
+\newcommand{\bundle}{bundle\xspace}
+\newcommand{\inbox}{sendbox\xspace}
+\newcommand{\outbox}{receivebox\xspace}
+\newcommand{\capinbox}{Sendbox\xspace}
+\newcommand{\capoutbox}{Receivebox\xspace}
+\newcommand{\pair}{\inbox-\outbox pair\xspace}
+
+We demonstrate CCP's flexibility by applying it as a core component of Bundler.
+Bundler~\cite{bundler} introduces the idea of {\em site-to-site} Internet traffic control. By ``site'', we mean a single physical location with tens to many thousands of endpoints sharing access links to the rest of the Internet. Examples of sites include a company office, a coworking office building, a university campus, a single datacenter, and a point-of-presence (PoP) of a regional Internet Service Provider (ISP). 
+
+Consider a company site with employees running thousands of concurrent applications. The administrator may wish to enforce certain traffic control policies for the company; for example, ensuring rates and priorities for Zoom sessions, de-prioritizing bulk backup traffic, prioritizing interactive web sessions, and so on. There are two issues that stand in the way: first, the bottleneck for these traffic flows may not be in the company's network, and second, the applications could all be transiting different bottlenecks. So what is the company to do?
+
+Cloud computing has made the second issue manageable. Because the cloud has become the prevalent method to deploy applications today, applications from different vendors often run from a small number of cloud sites (e.g., Amazon, Azure, etc.). This means that the network path used by these multiple applications serving the company's users are likely to share a common bottleneck; for example, all the applications running from Amazon's US-West datacenter, all the video sessions from a given Zoom datacenter, and so on. In this setting,  by treating the traffic between the datacenter site and the company site as a single aggregate, the company's network administrator may be able to achieve their traffic control objectives.
+
+But what about the first issue? The bottleneck for all the traffic between Amazon US-West and the company may not be the site's access link or at Amazon, but elsewhere, e.g., within the company's ISP; indeed, that may be the common case~\cite{inferring-interdomain-congestion, isp-throttle-1, isp-throttle-2, isp-throttle-3}. Unfortunately, the company cannot control traffic when the queues build inside its ISP. And the ISP can't help because it does not know what the company's objectives are.\footnote{Interdomain QoS mechanisms~\cite{braden1997resource, wroclawski1997use} have not succeeded in the Internet despite years of effort.}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\textwidth]{bundler/img/deployment-arch.pdf}
+    \caption{An example deployment scenario for Bundler in sites A and B.
+    Traffic between the two boxes is aggregated into a single bundle, shown as shaded boxes. The \inbox schedules the traffic within the bundle according to the policy the administrator specifies (\S\ref{s:bundler:design}).
+    }
+    \label{fig:deploy:arch}
+\end{figure}
+
+
+Bundler solves this problem by enabling flexible control of a traffic {\em bundle} between a source site and a destination site by {\em shifting} the queues that would otherwise have accumulated elsewhere to the source's site (Figure~\ref{fig:design:shift-bottleneck}). It then schedules packets from this shifted queue using standard techniques~\cite{diffserv, fair-queueing, sfq, pie, CoDel, fifoplus, virtualClocks, csfq, drr, red, ecn} to reduce mean flow-completion times, ensure low packet delays, isolate classes of traffic from each other, etc.
+
+The key idea in Bundler is a control loop between the source and destination sites to calculate the dynamic rate for the bundle. Rather than terminate end-to-end connections at the sites, we leave them intact and develop an ``inner loop'' control method between the two sites that computes this rate. The inner control loop uses a delay-based congestion control algorithm that ensures high throughput, but controls {\em self-inflicted queueing delays} at the actual bottleneck. By avoiding queues at the bottleneck, the source site can prioritize latency-sensitive applications and allocate rates according to its objectives.
+
+By not terminating the end-to-end connections at the sites, Bundler achieves a key benefit: if the bottleneck congestion is due to other traffic not from the bundle, end-to-end algorithms naturally find their fair-share. It also simplifies the implementation because Bundler does not have to proxy TCP, QUIC, and other end-to-end protocols.
+
+\subsubsection{Design}\label{s:bundler:design}
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{bundler/img/shift-bottleneck-combined}
+    \caption{This illustrative example with a single flow shows how Bundler can take control of queues in the network. The plots, from measurements on an emulated path (as in \S\ref{s:bundler:eval}), show the trend in queueing delays at each queue over time. The queue where delays build up is best for scheduling decisions, since it has the most choice between packets to send next. Therefore, the \inbox \emph{shifts} the queues to itself.}\label{fig:design:shift-bottleneck}
+\end{figure}
+
+Recall that in order to do scheduling, we need to move the queues from the network to the Bundler. 
+In this section, we first describe our key insight for moving the in-network queues, and then explain our specific design choices. 
+Recall that each site deploys one Bundler middlebox which we logically partition into sender-side (\inbox) and receiver-side (\outbox) functionality.
+
+We induce queuing at the \inbox by rate limiting the outgoing traffic. 
+If this rate limit is made smaller than the bundle's fair share of bandwidth at the bottleneck link in the network, it will decrease throughput. 
+Conversely, if the rate is too high, packets will pass through the \inbox without queueing.
+Instead, the rate needs to be set such that the bottleneck link sees a small queue while remaining fully utilized (and the bundled traffic competes fairly in the presence of cross traffic). 
+We make a simple, but powerful, observation: existing congestion control algorithms calculate exactly this rate~\cite{Jacobson88}. 
+Therefore, running such an algorithm to set a bundle's rate would reduce its self-inflicted queue at the bottleneck, causing packets to queue at the \inbox instead, without reducing the bundle's throughput.
+Note that end hosts would continue running a traditional congestion control algorithm as before (\eg Cubic~\cite{cubic}, BBR~\cite{bbr}) which is unaware of Bundler.
+Rather, the \inbox's congestion control algorithm acts on the traffic bundle as a \emph{single unit}.
+
+Figure~\ref{fig:design:shift-bottleneck} illustrates this concept for a single flow traversing a bottleneck link in the 
+network.
+Without Bundler, packets from the end hosts are queued in the network, while the queue at the edge is unoccupied. 
+In contrast, a Bundler deployed at the edge is able to shift the queue to its \inbox.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\columnwidth]{bundler/img/arch-block-diag}
+    \vspace{-40pt}
+    \caption{Bundler comprises of six sub-systems: four (in green) implement \inbox functionality, one (in blue) implements \outbox functionality, and the datapath (orange) is shared between the two. }\label{fig:design:block-diag}
+\end{figure}
+Figure~\ref{fig:design:block-diag} shows Bundler's sub-systems: 
+(1) A congestion control module at the \inbox which implements the rate control logic and cross-traffic detection.
+(2) A mechanism for sending congestion feedback (ACKs) in the \outbox, and (3) a measurement module in the \inbox that computes congestion signals (RTT and receive rate) from the received feedback. We discuss options for implementing congestion feedback mechanism in \S\ref{s:bundler:design} and how to use that feedback in the measurement module in \S\ref{s:bundler:measurement}.
+(4) A datapath for packet processing (which includes rate enforcement and packet scheduling). Any modern middlebox datapath, \eg BESS~\cite{bess}, P4~\cite{p4}, or  Linux qdiscs, is suitable. 
+
+A congestion control algorithm at the \inbox, running atop CCP, would require network feedback from the receivers to measure congestion and adjust the sending rates accordingly. We discuss multiple options for obtaining this. 
+
+\paragrapha{Passively observe in-band TCP acknowledgements}
+Conventional endhost-based implementations have used TCP acknowledgements to gather congestion control measurements. A simple strategy for Bundler is to passively observe the receiver generated TCP acknowledgements at the \inbox. However, we discard this option as it is specific to TCP and thus incompatible with alternate protocols, \ie UDP for video streaming or QUIC's encrypted transport header~\cite{quic}.
+
+\paragrapha{Out-of-band feedback} Having eliminated the options for using in-band feedback, we adopt an out-of-band feedback mechanism: the \outbox sends out-of-band congestion ACKs to the \inbox.
+This decouples congestion signalling from traditional ACKs used for reliability and is thus indifferent to the underlying protocol (be it TCP, UDP, or QUIC).
+
+\subsubsection{Measurement}\label{s:bundler:measurement}
+\begin{figure}
+    \centering
+    \includegraphics[width=\columnwidth]{bundler/img/rate-calculation}
+    \caption{Example of epoch-based measurement calculation. Time moves from top to bottom.
+    The \inbox records the packets that are identified as epoch boundaries. 
+    The \outbox, up on identifying such packets, sends a feedback message back to
+    the \inbox, which allows it to calculate the RTT and epochs.
+    }\label{fig:ratecalc}
+\end{figure}
+
+Sending an out-of-band feedback message for every packet arriving at the \outbox would result in high communication overhead. 
+Furthermore, conducting measurements on every outgoing packet at the \inbox would require maintaining state for each of them, which can be expensive, especially at high bandwidth-delay products. 
+This overhead is unnecessary; reacting once per RTT is sufficient for congestion control algorithms~\cite{ccp}. 
+The \inbox therefore samples a subset of the packets for which the \outbox sends congestion ACKs.
+We refer to the period between two successively sampled packets as an \emph{epoch}, and each sampled packet as an \emph{epoch boundary packet}.
+
+The simplest way to sample an epoch boundary packet would be for the \inbox to probabilistically modify a packet (\ie set a flag bit in the packet header) and the \outbox to match on this flag bit.
+However, where in the header should this flag bit be?
+Evolving packet headers has proved impractical~\cite{trotsky}, so perhaps we could use an encapsulation mechanism.
+Protocols at both L3 (\eg NVGRE~\cite{nvgre}, IP-in-IP~\cite{ipinip}) and L4 (\eg VXLAN~\cite{vxlan}) are broadly available and deployed in commodity routers today.
+
+Happily, we observe that such packet modification is not inherently necessary; since the same packets pass through the \inbox and \outbox, uniquely identifying a given pattern of packets is sufficient to meet our requirements. In this scheme, the \inbox and \outbox both hash a subset of the header for every packet, and consider a packet as an epoch boundary if its hash is a multiple of the desired \emph{sampling period}.
+
+Upon identifying a packet $p_i$ as an epoch boundary packet the \inbox records: 
+(i) its hash, $h(p_i)$, 
+(ii) the time when it is sent out, $t_{\text{sent}}(p_i)$, 
+and (iii) the total number of bytes sent thus far including this packet, $b_{sent}(p_i)$. 
+When the \outbox sees $p_i$, it also identifies it as an epoch boundary and sends a congestion ACK back to the \inbox. 
+The congestion ACK contains $h(p_i)$ and the running count of the total number of bytes received for that bundle. 
+Upon receiving the congestion ACK for $p_i$, the \inbox records the received information, and using its previously recorded state, computes the RTT and the rates at which packets are sent and received, as in Figure~\ref{fig:ratecalc}.
+
+% actually contains the time series
+\input{bundler/micro-time-thru} 
+
+\paragrapha{Epoch boundary identification}
+The packet header subset that is used for identifying epoch boundaries must have the following properties:
+(i) It must be the same at both the \inbox and the \outbox.
+(ii) Its values must remain unchanged as a packet traverses the network from the \inbox to the \outbox (so, for example, the TTL field must be excluded).\footnote{Certain fields, that are otherwise unchanged within the network, can be changed by NATs deployed within a site. Ensuring that the Bundler boxes sit outside the NAT would allow them to make use of those fields.}
+(iii) It differentiates individual \emph{packets} (and not just flows), to allow sufficient entropy in the computed hash values.
+(iv) It also differentiates a retransmitted packet from the original one, to prevent spurious samples from disrupting the measurements (this precludes, for example, the use of TCP sequence number).
+%
+We expect that the precise set of fields used will depend on specific deployment considerations.
+For example, in our prototype implementation we use a header subset of the IPv4 IP ID field and destination IP and port. 
+We make this choice for simplicity; it does not require tunnelling mechanisms and is thus easily deployable, and if Bundler fails, connections are unaffected. 
+We note that previous proposals~\cite{ip-traceback} have used IP ID for unique packet identification. 
+The drawback of this approach is that it cannot be extended to IPv6.
+To support a wider set of scenarios, Bundler could use dedicated fields in an encapsulating header (as in~\cite{axe}).
+
+To visualize how these measurements impact the behavior of the signals over time we pick an experiment for which the median difference matches that of the entire distribution and plot a five second segment of our estimates compared to the actual values in Figure~\ref{fig:micro:time-thru}.
+
+% actually contains the distributions
+\input{bundler/micro-time-delay}
+
+\paragrapha{Choosing the epoch size}
+In order to balance reaction speed and overhead, epoch packets should be spaced such that measurements are collected approximately once per RTT~\cite{ccp}.
+Therefore, for each bundle, we track the minimum observed RTT ($minRTT$) at the \inbox and set the epoch size $N = (0.25 \times minRTT \times send\_rate)$, where the $send\_rate$ is computed as described above. The measurements passed to the congestion control algorithms at the \inbox are then computed over a sliding window of epochs that corresponds to one RTT. Averaging over a window of multiple epochs also increases resilience to possible re-ordering of packets between the \inbox and the \outbox, which can result in them seeing different number of packets between two epochs.
+
+When the \inbox updates the epoch size $N$ for a bundle, it needs to send an out-of-band message to the \outbox communicating the new value. To keep our measurement technique resilient to potential delay and loss of this message, the epoch size $N$ is always rounded down to the nearest power of two. Doing this ensures that the epoch boundary packets sampled by the \outbox are either a strict superset or a strict subset of those sampled by the \inbox. The \inbox simply ignores the additional feedback messages in former case, and the recorded epoch boundaries for which no feedback has arrived in the latter.  
+
+\paragrapha{Robust to packet loss}
+Note that our congestion measurement technique is robust to a boundary packet being lost between the \inbox and the \outbox. In this case, the \inbox would not get feedback for the lost boundary packet, and it would simply compute rates for the next boundary packet over a longer epoch once the next congestion ACK arrives.
+
+\paragrapha{Microbenchmarks}
+To evaluate the accuracy and robustness of this measurement technique, we picked 90 traces from our evaluation covering a range of link delays (20ms, 50ms, 100ms) and bottleneck rates (24Mbps, 48Mbps, 96Mbps), and computed the difference, at each time step, between Bundler's measurements (estimate) and the corresponding values measured at the bottleneck router (actual). 
+In Figure~\ref{fig:micro:time-delay} we focus on the RTT measurements: the bottom plot shows the distribution of the differences, and the top plot puts it into context by showing a five second segment from a trace where the median difference matched that of the full distribution. In Figure~\ref{fig:micro:time-thru}, we produce the same plots for the receive rate estimates.
+In summary, 80\% of our RTT estimates were within 1.2ms of the actual value, and 80\% of our receive rate estimates were within 4Mbps of the actual value.
+
+\subsubsection{Benefits}\label{s:bundler:eval}
+
+We use network emulation via mahimahi~\cite{mahimahi} to evaluate our implementation of Bundler in a controlled setting.
+There are three $8$-core Ubuntu 18.04 machines in our emulated setup: (1) runs a sender, (2) runs a \inbox, and (3) runs both a \outbox and a receiver.
+We disable both TCP segmentation offload (TSO) and generic receive offload (GRO) as they would change the packet headers in between the \inbox and \outbox, which would cause inconsistent epoch boundary identification between the two boxes.
+Nevertheless, throughout our experiments CPU utilization on the machines remained below $10$\%.
+
+Unless otherwise specified, we emulate the following scenario.
+A many-threaded client generates requests from a request size CDF drawn from an Internet core router~\cite{caida-dataset} and assigns them to one of $200$ server processes.
+The workload is heavy-tailed: 97.6\% of requests are 10KB or shorter, and the largest 0.002\% of requests are between $5$MB and $100$MB.
+Each server then sends the requested amount of data to the client and we measure the FCT of each such request. 
+The link bandwidth at the mahimahi link is set to 96Mbps, and the RTT is set to 50ms. The requests result in an offered load of 84Mbps. 
+
+The endhost runs Cubic~\cite{cubic}, and the \inbox runs Copa~\cite{copa} with Nimbus~\cite{nimbus-arxiv} for cross traffic detection.
+The \inbox schedules traffic using the Linux kernel implementation of Stochastic Fairness Queueing (SFQ)~\cite{sfq}.
+Each experiment is comprised of 1,000,000 requests sampled from this distribution, across 10 runs each with a different random seed.
+We use median slowdown as our metric, where the ``slowdown'' of a request is its completion time divided by what its completion time would have been in an unloaded network. A slowdown of $1$ is optimal, and lower numbers represent better performance.
+
+\input{bundler/overview-benefits}
+\newcommand{\baseline}{Status Quo\xspace}
+\newcommand{\optimal}{In-Network\xspace}
+
+We evaluate three configurations: 
+(i) The ``\baseline'' configuration represents the status quo: the \inbox simply forwards packets as it receives them, and the mahimahi bottleneck uses FIFO scheduling.
+(ii) The ``\optimal'' configuration deploys fair queueing
+at the mahimahi bottleneck.\footnote{
+We implement this scheme by modifying mahimahi (our patch comprises $171$ lines of C++) to add a packet-level fair-queueing scheduler to the bottleneck link.}
+Recall from \S\ref{s:intro} that this configuration is not deployable.
+(iii) The default Bundler configuration, that uses stochastic fair queueing~\cite{sfq} scheduling policy at the \inbox, and (iv) Using Bundler with FIFO (without exploiting scheduling opportunity).
+
+Figure~\ref{fig:eval:best} presents our results. 
+The median slowdown (across all flow sizes) decreases from \overviewBenefitsBaselineMedian 
+for Baseline to \overviewBenefitsBundlerMedian 
+with Bundler \overviewBenefitsBundlerMedianImprovement
+lower. 
+\optimal's median slowdown is a further 15\% lower then Bundler: \overviewBenefitsOptimalMedian.
+Meanwhile, in the tail, Bundler's $99\%$ile slowdown is \overviewBenefitsBundlerTail, which is 48\% lower than the \baseline's \overviewBenefitsBaselineTail. \optimal's $99\%$ile slowdown is \overviewBenefitsOptimalTail.
