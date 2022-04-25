@@ -1,31 +1,66 @@
 Traditionally, access to the network has been mediated by the operating system. Just as the operating system mediated access to other hardware resources such as memory, storage, and input before the adoption of computer networks, once computers gained networking features the natural place to provide access to them was in the operating system.
 Over time, the operating system's network stack evolved to gain more features and support a wider range of applications. While the abstractions the operating system has provided were useful, they came at high cost: the operating system's interrupt-driven structure yields latency for better multiplexing and efficiency.
+However, a positive aspect of the operating system's network stack was its standardized API and structure; the Linux kernel was able to make widely-adopted changes to support a wide range of applications, such as the shift to an initial congestion window of $10$ packets~\cite{iw10}.
 
-In the past decade, network line rates have scaled while the amount of available compute has stagnated. Further, the servers on which applications run are more often highly loaded, so the traditional interrupt-driven approach has not saved much energy.
+In the past decade, network line rates have scaled while the amount of available compute has stagnated. Further, the servers on which applications run are more often highly loaded, so the traditional interrupt-driven approach has not saved much energy. Finally, as applications scaled to run across many machines, the end-to-end response time to a request could depend on many component requests internally, and the slowest of these requests would dominate the end-to-end response time.
+This problem was described as the ``Attack of the Killer Microseconds''~\cite{killer-microseconds}.
 As a result, there has been a trend towards a new way of building and running network applications: running servers ``hot'' (\ie at high CPU load), bypassing the operating system's network stack in favor of accessing network hardware directly from user-space, and using spin-polling instead of interrupts to access hardware.
 This trend began with proposals such as Netmap~\cite{netmap} and PacketShader~\cite{packetshader}, and gained broader adoption with Intel's DPDK~\cite{dpdk}.
-Since then, a number of research systems have leveraged DPDK, or other kernel-bypass networking technologies such as RDMA, to provide low-latency network stacks to applications. A few initial efforts specialized to key-value store applications were MICA~\cite{mica}, FaRM~\cite{farm}, Pilaf~\cite{pilaf}, and HERD~\cite{herd}.
+Since then, a number of research systems have leveraged DPDK, or other kernel-bypass networking technologies such as RDMA, to provide low-latency network stacks to applications. A few initial efforts specialized to key-value store applications were MICA~\cite{mica}, FaRM~\cite{farm}, Pilaf~\cite{pilaf}, HERD~\cite{herd}, and eRPC~\cite{erpc}.
+Relatedly, mTCP~\cite{mtcp} proposed a scalable TCP implementation for such applications to use, 
+Tonic~\cite{tonic} proposed offloading TCP functions to the NIC,
+TAS~\cite{tas} proposed streamlining applications' TCP processing on a dedicated set of cores,
+and Floem~\cite{floem} provided an API to more easily offload application components to SmartNICs.
 
-While these new high-performance datapaths were at first tightly integrated with the application, over time, they gained features to support multiple applications together, since it is important for deployment that applications are able to multiplex onto machines. Examples of these multiplexing-capable high-performance datapaths are Arrakis~\cite{arrakis} and IX~\cite{ix}:
+\section{Evolution of Kernel-Bypass Network Stacks}
+\begin{table}
+    \small
+    \begin{tabular}{p{2cm} p{3cm} p{3.5cm} p{3cm}}
+        \hline
+                         & Multicore & Batching & Load Balancing \\
+        \hline
+        Arrakis          & Stack Duplication & None & None \\
+        IX               & Stack Duplication & Run-to-completion, adaptive batching & None \\
+        ZygOS            & Stack Duplication & Run-to-completion, adaptive batching (receive only) & Work Stealing via IPI \\
+        Snap             & Dedicated cores & Opportunistic batching & None \\
+        Shenango, Caladan& IOKernel dedicated core & None & Work Stealing, Core Allocation \\
+        Demikernel       & Stack Duplication & - & Cooperative Coroutines \\
+        \hline
+    \end{tabular}
+    \begin{tabular}{p{2cm} p{3cm} p{6.5cm}}
+        \hline
+                         & Hardware & Queue Structure \\
+        \hline
+        Arrakis          & SR-IOV & Per-app \\
+        IX               & SR-IOV, NIC RSS & Per-app \\
+        ZygOS            & - & Intermediate queues to distribute work among cores \\
+        Snap             & - & Intermediate queues between ``engines'' \\
+        Shenango, Caladan& NIC RSS (Caladan) & Per-app \\
+        Demikernel       & - & Per-app \\
+        \hline
+    \end{tabular}
+    \caption{Summary of the characteristics of several recently-proposed high-performance network datapaths. }
+    \label{t:systems}
+\end{table}
+While these new high-performance datapaths were at first tightly integrated with the application, over time, they gained features to support multiple applications together, since it is important for deployment that applications are able to multiplex onto machines. These developments are summarized in Table~\cite{t:systems}. Examples of these multiplexing-capable high-performance datapaths are Arrakis~\cite{arrakis} and IX~\cite{ix}:
 \begin{itemize}
 %\item \textbf{mTCP} is a user-level TCP implementation built on DPDK. 
 \item \textbf{Arrakis} explores the implications to the operating system once the primary data path for applications moves into user-space. It argues that the operating system is still valuable as a control plane to mediate access to network resources. Rather than using DPDK, it implements a custom network datapath called ``Extaris'' which communicates with the device driver directly. 
 It uses interrupts triggered by hardware doorbells to deliver data to applications, and integrates this with the scheduler to wake the application if it is not running.
-\item \textbf{IX} 
+\item \textbf{IX} further introduced the idea of run-to-completion on batches of packets as a way to scale kernel-bypass network stacks to support both high throughput and low latency.
 \end{itemize}
 
-%\begin{table}
-%    \centering
-%    \small
-%    \begin{tabular}{l p{8cm}}
-%        \tunnel & A specific piece of network functionality. \\
-%        \hline
-%        \tunnel stack & An application's specification of the set of \tunnels it wants to use. \\
-%        \hline
-%        Datapath stack & The set of \tunnels \name chooses among those in the \tunnel stack. \\
-%        \hline
-%        Optimization Pass & Rule-based compile-time modification to the \tunnel stack. \\
-%    \end{tabular}
-%    \caption{Glossary of terms used in this paper.}
-%    \label{t:glossary}
-%\end{table}
+Further work has continue this trend of enhancing kernel-bypass network stacks to provide more traditional operating system features to support a wider range of applications.
+\textbf{ZygOS}~\cite{zygos} integrated scheduling into the network stack, using work stealing via inter-processor interrupts (``IPI'') to distribute requests across cores. ZygOS uses insights from queueing theory to distribute requests among cores, no matter which core they originally arrived on. This limits the tail latency that applications using ZygOS observe. 
+
+\textbf{Shenango}~\cite{shenango} and \textbf{Caladan}~\cite{caladan} extended this approach to support higher ``CPU efficiency''. These systems use an ``iokernel'' thread as the only spin-polling thread, which then distributes packets to application threads, which they schedule onto cores only when there are packets available for the application to process. 
+If an application is falling behind on its packet queue, the Shenango/Caladan scheduler will allocate more cores for that application to prevent the queues from growing.
+Thus, Shenango and Caladan are able to (unlike ZygOS) allocate compute to bulk processing applications when latency-sensitive applications offer little load, but then quickly reclaim those resources to maintain low latencies when offered load increases.
+
+\textbf{Demikernel}~\cite{demikernel} offers a ``library operating system'' approach so that applications can function across multiple different kernel-bypass network technologies, such as DPDK and RDMA. Demikernel can make scheduling decisions even across applications that use different underlying network datapaths.
+
+\textbf{Snap}~\cite{snap} and its component network stack ``Pony Express'' focus on enabling rapid development and deployment of networking features on high-performance network stacks. Similar to TAS~\cite{tas}, Snap uses a ``disaggregated'' architecture for the network stack: instead of running the network stack on the same cores as the application, Snap uses separate cores. Snap scales out individual packet processing ``engines'' which encapsulate dataplane operations.
+
+Finally, Cai \etal explore~\cite{host-net-overheads} potential changes to the Linux kernel network stack to scale it to 100 Gbit/s access link bandwidth. They observe that a single core cannot saturate 100 Gbit/s links and suggest scaling certain elements of the stack, including data copies, to multiple cores.
+
+Overall, modern applications are faced with a wide range of datapaths to choose from, each of which provides different performance characteristics for different application workloads. As a result, it is unlikely that we will see a re-convergence of applications toward a standardized API and structure. The systems this thesis describes thus embrace this diversity of structure and seek to provide configurability and flexibility across a variety of applications and datapaths.
