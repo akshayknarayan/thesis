@@ -1,0 +1,31 @@
+Traditionally, access to the network has been mediated by the operating system. Just as the operating system mediated access to other hardware resources such as memory, storage, and input before the adoption of computer networks, once computers gained networking features the natural place to provide access to them was in the operating system.
+Over time, the operating system's network stack evolved to gain more features and support a wider range of applications. While the abstractions the operating system has provided were useful, they came at high cost: the operating system's interrupt-driven structure yields latency for better multiplexing and efficiency.
+
+In the past decade, network line rates have scaled while the amount of available compute has stagnated. Further, the servers on which applications run are more often highly loaded, so the traditional interrupt-driven approach has not saved much energy.
+As a result, there has been a trend towards a new way of building and running network applications: running servers ``hot'' (\ie at high CPU load), bypassing the operating system's network stack in favor of accessing network hardware directly from user-space, and using spin-polling instead of interrupts to access hardware.
+This trend began with proposals such as Netmap~\cite{netmap} and PacketShader~\cite{packetshader}, and gained broader adoption with Intel's DPDK~\cite{dpdk}.
+Since then, a number of research systems have leveraged DPDK, or other kernel-bypass networking technologies such as RDMA, to provide low-latency network stacks to applications. A few initial efforts specialized to key-value store applications were MICA~\cite{mica}, FaRM~\cite{farm}, Pilaf~\cite{pilaf}, and HERD~\cite{herd}.
+
+While these new high-performance datapaths were at first tightly integrated with the application, over time, they gained features to support multiple applications together, since it is important for deployment that applications are able to multiplex onto machines. Examples of these multiplexing-capable high-performance datapaths are Arrakis~\cite{arrakis} and IX~\cite{ix}:
+\begin{itemize}
+%\item \textbf{mTCP} is a user-level TCP implementation built on DPDK. 
+\item \textbf{Arrakis} explores the implications to the operating system once the primary data path for applications moves into user-space. It argues that the operating system is still valuable as a control plane to mediate access to network resources. Rather than using DPDK, it implements a custom network datapath called ``Extaris'' which communicates with the device driver directly. 
+It uses interrupts triggered by hardware doorbells to deliver data to applications, and integrates this with the scheduler to wake the application if it is not running.
+\item \textbf{IX} 
+\end{itemize}
+
+%\begin{table}
+%    \centering
+%    \small
+%    \begin{tabular}{l p{8cm}}
+%        \tunnel & A specific piece of network functionality. \\
+%        \hline
+%        \tunnel stack & An application's specification of the set of \tunnels it wants to use. \\
+%        \hline
+%        Datapath stack & The set of \tunnels \name chooses among those in the \tunnel stack. \\
+%        \hline
+%        Optimization Pass & Rule-based compile-time modification to the \tunnel stack. \\
+%    \end{tabular}
+%    \caption{Glossary of terms used in this paper.}
+%    \label{t:glossary}
+%\end{table}
