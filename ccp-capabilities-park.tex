@@ -200,7 +200,7 @@ The workload is heavy-tailed: 97.6\% of requests are 10KB or shorter, and the la
 Each server then sends the requested amount of data to the client and we measure the FCT of each such request. 
 The link bandwidth at the mahimahi link is set to 96Mbps, and the RTT is set to 50ms. The requests result in an offered load of 84Mbps. 
 
-The endhost runs Cubic~\cite{cubic}, and the \inbox runs Copa~\cite{copa} with Nimbus~\cite{nimbus} for cross traffic detection.
+The endhost runs Cubic~\cite{cubic}, and the \inbox runs Copa~\cite{copa} with Nimbus~\cite{nimbus-arxiv} for cross traffic detection.
 The \inbox schedules traffic using the Linux kernel implementation of Stochastic Fairness Queueing (SFQ)~\cite{sfq}.
 Each experiment is comprised of 1,000,000 requests sampled from this distribution, across 10 runs each with a different random seed.
 We use median slowdown as our metric, where the ``slowdown'' of a request is its completion time divided by what its completion time would have been in an unloaded network. A slowdown of $1$ is optimal, and lower numbers represent better performance.

@@ -42,7 +42,7 @@ and Floem~\cite{floem} provided an API to more easily offload application compon
     \caption{Summary of the characteristics of several recently-proposed high-performance network datapaths. }
     \label{t:systems}
 \end{table}
-While these new high-performance datapaths were at first tightly integrated with the application, over time, they gained features to support multiple applications together, since it is important for deployment that applications are able to multiplex onto machines. These developments are summarized in Table~\cite{t:systems}. Examples of these multiplexing-capable high-performance datapaths are Arrakis~\cite{arrakis} and IX~\cite{ix}:
+While these new high-performance datapaths were at first tightly integrated with the application, over time, they gained features to support multiple applications together, since it is important for deployment that applications are able to multiplex onto machines. These developments are summarized in Table~\ref{t:systems}. Examples of these multiplexing-capable high-performance datapaths are Arrakis~\cite{arrakis} and IX~\cite{ix}:
 \begin{itemize}
 %\item \textbf{mTCP} is a user-level TCP implementation built on DPDK. 
 \item \textbf{Arrakis} explores the implications to the operating system once the primary data path for applications moves into user-space. It argues that the operating system is still valuable as a control plane to mediate access to network resources. Rather than using DPDK, it implements a custom network datapath called ``Extaris'' which communicates with the device driver directly. 
