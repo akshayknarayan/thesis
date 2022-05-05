@@ -11,40 +11,43 @@ This problem was described as the ``Attack of the Killer Microseconds''~\cite{ki
 As a result, there has been a trend towards a new way of building and running network applications: running servers ``hot'' (\ie at high CPU load), bypassing the operating system's network stack in favor of accessing network hardware directly from user-space, and using spin-polling instead of interrupts to access hardware.
 This trend began with proposals such as Netmap~\cite{netmap} and PacketShader~\cite{packetshader}, and gained broader adoption with Intel's DPDK~\cite{dpdk}.
 Since then, a number of research systems have leveraged DPDK, or other kernel-bypass networking technologies such as RDMA, to provide low-latency network stacks to applications. A few initial efforts specialized to key-value store applications were MICA~\cite{mica}, FaRM~\cite{farm}, Pilaf~\cite{pilaf} and HERD~\cite{herd}.
-eRPC~\cite{erpc} showed that these optimizations can generalize to other RPC-structured applications.
-Relatedly, mTCP~\cite{mtcp} proposed a scalable TCP implementation for such applications to use, 
-Tonic~\cite{tonic} proposed offloading TCP functions to the NIC,
+Beyond these, eRPC~\cite{erpc} showed that these optimizations can generalize to other RPC-structured applications, and mTCP~\cite{mtcp} proposed a scalable TCP implementation for such applications to use.
+
+Similarly, a few systems have gone beyond kernel bypass and proposed moving even more of the datapath into hardware. For example, Tonic~\cite{tonic} proposed offloading TCP functions to the NIC,
 TAS~\cite{tas} proposed streamlining applications' TCP processing on a dedicated set of cores,
-NanoPU~\cite{nanopu} proposed an even tighter integration between the CPU and hardware-accelerated datapaths,
-and Floem~\cite{floem} provided an API to more easily offload application components to SmartNICs.
+and Floem~\cite{floem} provided an API to more easily offload application components to SmartNICs. NanoPU~\cite{nanopu} goes the furthest by moving the entire transport layer, including load balancing requests across cores, into an FPGA.
 
 \section{Evolution of Kernel-Bypass Network Stacks}
 \begin{table}
     \small
+    \begin{minipage}{\textwidth}
     \begin{tabular}{p{2cm} p{3cm} p{3.5cm} p{3cm}}
         \hline
-                         & Multicore & Batching & Load Balancing \\
+                         & \textbf{Multicore Model} & \textbf{Batching} & \textbf{Load Balancing} \\
         \hline
         Arrakis          & Stack Duplication & None & None \\
         IX               & Stack Duplication & Run-to-completion, adaptive batching & None \\
         ZygOS            & Stack Duplication & Run-to-completion, adaptive batching (receive only) & Work Stealing via IPI \\
-        Snap             & Dedicated cores & Opportunistic batching & None \\
-        Shenango, Caladan& IOKernel dedicated core & None & Work Stealing, Core Allocation \\
-        Demikernel       & Stack Duplication & - & Cooperative Coroutines \\
+        Snap             & Dedicated cores\footnote{Snap also supports operation modes that do not dedicate cores.} & Opportunistic batching & None \\
+        Shenango, Caladan& IOKernel dedicated core & None & Work Stealing, Core Allocation\footnote{Caladan uses IPIs.} \\
+        Demikernel       & Stack Duplication & None & Cooperative Coroutines \\
+        NanoPU           & Stack Duplication & Within NIC & Hardware-managed \\
         \hline
     \end{tabular}
     \begin{tabular}{p{2cm} p{3cm} p{6.5cm}}
         \hline
-                         & Hardware & Queue Structure \\
+                         & \textbf{Hardware} & \textbf{Queue Structure} \\
         \hline
         Arrakis          & SR-IOV & Per-app \\
         IX               & SR-IOV, NIC RSS & Per-app \\
         ZygOS            & NIC RSS & Per-app + Intermediate queues to distribute work among cores \\
         Snap             & - & Intermediate queues between ``engines'' \\
-        Shenango, Caladan& NIC RSS (Caladan) & Per-app \\
-        Demikernel       & - & Per-app \\
+        Shenango, Caladan& NIC RSS\footnote{Caladan uses NIC RSS, but Shenango does not.} & Per-app \\
+        Demikernel       & RDMA support & Per-app \\
+        NanoPU           & Transport layer in FPGA & Hardware-driven \\
         \hline
     \end{tabular}
+    \end{minipage}
     \caption{Summary of the characteristics of several recently-proposed high-performance network datapaths. }
     \label{t:systems}
 \end{table}
@@ -57,7 +60,7 @@ It uses interrupts triggered by hardware doorbells to deliver data to applicatio
 \end{itemize}
 
 Further work has continue this trend of enhancing kernel-bypass network stacks to provide more traditional operating system features to support a wider range of applications.
-\textbf{ZygOS}~\cite{zygos} uses work stealing via inter-processor interrupts (``IPI'') to distribute requests across cores. ZygOS uses insights from queueing theory to distribute requests among cores, no matter which core they originally arrived on. This limits the tail latency that applications using ZygOS observe. Furhter, ZygOS introduces the idea of scheduling application based on information from the network stack.
+\textbf{ZygOS}~\cite{zygos} uses work stealing via inter-processor interrupts (``IPI'') to distribute requests across cores. ZygOS uses insights from queueing theory to distribute requests among cores, no matter which core they originally arrived on. This limits the tail latency that applications using ZygOS observe. Further, ZygOS introduced the idea of scheduling applications using information from the network stack.
 
 \textbf{Shenango}~\cite{shenango} and \textbf{Caladan}~\cite{caladan} extended this approach to support higher ``CPU efficiency''. These systems use an ``iokernel'' thread as the main\footnote{Application runtime threads can also spin-poll. Also, unlike in Shenango, in Caladan packets move directly from the NIC to the application thread without passing through an iokernel thread.} spin-polling thread. 
 This iokernel distributes packets to application threads, and manages applications' core allocation to ensure that applications which need to process packets have enough cores allocated to do so.
@@ -75,4 +78,5 @@ Similar to TAS~\cite{tas}, Snap supports (among other configurations) a ``disagg
 
 Finally, Cai \etal~\cite{host-net-overheads} explore potential changes to the Linux kernel network stack to scale it to 100 Gbit/s access link bandwidth. They observe that a single core cannot saturate 100 Gbit/s links and suggest scaling certain elements of the stack, including data copies, to multiple cores.
 
-Overall, modern applications are faced with a wide range of datapaths to choose from, each of which provides different performance characteristics for different application workloads. As a result, it is unlikely that we will see a re-convergence of applications toward a standardized API and structure. The systems this thesis describes thus embrace this diversity of structure and seek to provide configurability and flexibility across a variety of applications and datapaths.
+Overall, modern applications are faced with a wide range of datapaths to choose from, each of which provides different performance characteristics for different application workloads. As a result, it is unlikely that we will see a re-convergence of applications toward a standardized API and structure. 
+The systems this thesis describes thus embrace this diversity of structure and seek to provide configurability and flexibility across a variety of applications and datapaths.
